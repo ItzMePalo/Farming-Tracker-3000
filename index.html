@@ -13,7 +13,6 @@
     --line: #2a3120;
     --ink: #e7e4d6;
     --ink-soft: #b4b09a;
-    --muted: #767josh;
     --muted: #767a68;
     --moss: #5f8a4c;
     --moss-dark: #3f5f33;
@@ -92,9 +91,11 @@
   select{appearance:none;background-image:linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);background-position: calc(100% - 16px) center, calc(100% - 11px) center;background-size:5px 5px, 5px 5px;background-repeat:no-repeat;}
   input:focus, select:focus{outline:2px solid var(--moss);outline-offset:1px;}
   input::placeholder{color:var(--muted);}
+  input:disabled{opacity:0.4;cursor:not-allowed;}
 
   .drops-section{border-top:1px dashed var(--line);padding-top:16px;margin-top:6px;}
   .drop-row{display:grid;grid-template-columns: 2fr 1fr auto;gap:10px;margin-bottom:8px;align-items:center;}
+  .drop-hint-row{margin:-4px 0 8px;padding:6px 10px;background:rgba(201,154,78,0.08);border:1px dashed var(--amber-dim);border-radius:4px;font-size:11px;color:var(--amber);}
   .drop-row button.rm{background:none;border:none;color:var(--rust);cursor:pointer;font-size:16px;padding:4px 8px;}
   .drop-row .switch-mode{background:none;border:1px solid var(--line);color:var(--ink-soft);border-radius:4px;padding:8px 9px;cursor:pointer;font-size:11px;}
   .drop-row .switch-mode:hover{border-color:var(--moss);color:var(--ink);}
@@ -135,6 +136,8 @@
   .best-banner{background:var(--surface-2);border:1px solid var(--moss-dark);color:var(--ink);padding:12px 18px;border-radius:6px;margin-bottom:20px;font-size:13.5px;display:flex;align-items:center;gap:10px;}
   .best-banner b{color:var(--amber);font-family:ui-monospace,monospace;}
 
+  .price-cat{font-family:ui-monospace,monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--moss-light);margin:20px 0 8px;padding-top:14px;border-top:1px dashed var(--line);}
+  .price-cat:first-of-type{margin-top:0;padding-top:0;border-top:none;}
   .price-row{display:grid;grid-template-columns:2fr 1fr 1fr 70px;gap:10px;align-items:center;margin-bottom:8px;}
   .price-row .id{font-size:10px;color:var(--muted);font-family:ui-monospace,monospace;}
   .badge{font-size:9.5px;text-transform:uppercase;letter-spacing:0.04em;padding:2px 6px;border-radius:10px;text-align:center;font-family:ui-monospace,monospace;}
@@ -157,6 +160,10 @@
   .data-section h3{font-size:14px;margin:0 0 6px;color:var(--ink);}
   .data-section p{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5;}
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+
+  .conv-row{display:grid;grid-template-columns:2fr auto 2fr 90px;gap:10px;align-items:center;margin-bottom:8px;font-size:12.5px;}
+  .conv-row .arrow{color:var(--muted);text-align:center;}
+  .preset-chips{margin-top:10px;}
 </style>
 </head>
 <body>
@@ -164,7 +171,7 @@
   <header class="site">
     <div class="eyebrow">Hypixel Skyblock &middot; Garden Tools</div>
     <h1>Farming Tracker <span>3000</span></h1>
-    <p>Log pest-farming sessions crop by crop, track enchanted drops, sowing dust and pest count, and see which crop pays the best coins/hour — with live Bazaar &amp; NPC prices.</p>
+    <p>Log pest-farming sessions crop by crop, track enchanted drops, sowing dust and pest count, and see which crop pays the best coins/hour — with live Bazaar &amp; NPC prices, saved drop presets and craft-up suggestions.</p>
   </header>
 
   <nav class="tabs" id="tabs">
@@ -183,42 +190,122 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const DEFAULT_CROPS = ["Wheat","Carrot","Potato","Pumpkin","Melon","Sugar Cane","Cactus","Cocoa Beans","Nether Wart","Mushroom","Sunflower","Moonflower"];
+const DEFAULT_CROPS = ["Wheat","Carrot","Potato","Pumpkin","Melon","Sugar Cane","Cactus","Cocoa Beans","Nether Wart","Mushroom","Sunflower","Moonflower","Wild Rose"];
 const CROP_EMOJI = {
   "Wheat":"🌾","Carrot":"🥕","Potato":"🥔","Pumpkin":"🎃","Melon":"🍉",
   "Sugar Cane":"🎋","Cactus":"🌵","Cocoa Beans":"🍫","Nether Wart":"🫘",
-  "Mushroom":"🍄","Sunflower":"🌻","Moonflower":"🌙"
+  "Mushroom":"🍄","Sunflower":"🌻","Moonflower":"🌙","Wild Rose":"🌹"
 };
 const DEFAULT_EMOJI = "🌱";
-
-// Curated farming/pest-drop items with their (best-effort) Bazaar product IDs.
-// These are community-known IDs, not pulled live — verify in-game if a price looks off.
-const FARMING_ITEMS = [
-  {name:"Enchanted Wheat", id:"ENCHANTED_WHEAT", emoji:"🌾"},
-  {name:"Enchanted Bread", id:"ENCHANTED_BREAD", emoji:"🌾"},
-  {name:"Enchanted Hay Bale", id:"ENCHANTED_HAY_BLOCK", emoji:"🌾"},
-  {name:"Enchanted Carrot", id:"ENCHANTED_CARROT", emoji:"🥕"},
-  {name:"Enchanted Golden Carrot", id:"ENCHANTED_GOLDEN_CARROT", emoji:"🥕"},
-  {name:"Enchanted Potato", id:"ENCHANTED_POTATO", emoji:"🥔"},
-  {name:"Enchanted Baked Potato", id:"ENCHANTED_BAKED_POTATO", emoji:"🥔"},
-  {name:"Enchanted Pumpkin", id:"ENCHANTED_PUMPKIN", emoji:"🎃"},
-  {name:"Enchanted Melon", id:"ENCHANTED_MELON", emoji:"🍉"},
-  {name:"Enchanted Melon Block", id:"ENCHANTED_MELON_BLOCK", emoji:"🍉"},
-  {name:"Enchanted Sugar Cane", id:"ENCHANTED_SUGAR_CANE", emoji:"🎋"},
-  {name:"Enchanted Sugar", id:"ENCHANTED_SUGAR", emoji:"🎋"},
-  {name:"Enchanted Paper", id:"ENCHANTED_PAPER", emoji:"📄"},
-  {name:"Enchanted Cactus", id:"ENCHANTED_CACTUS", emoji:"🌵"},
-  {name:"Enchanted Cactus Green", id:"ENCHANTED_CACTUS_GREEN", emoji:"🌵"},
-  {name:"Enchanted Cocoa Beans", id:"ENCHANTED_COCOA", emoji:"🍫"},
-  {name:"Enchanted Cookie", id:"ENCHANTED_COOKIE", emoji:"🍪"},
-  {name:"Enchanted Nether Wart", id:"ENCHANTED_NETHER_STALK", emoji:"🫘"},
-  {name:"Mutant Nether Wart", id:"MUTANT_NETHER_STALK", emoji:"🫘"},
-  {name:"Enchanted Red Mushroom", id:"ENCHANTED_RED_MUSHROOM", emoji:"🍄"},
-  {name:"Enchanted Brown Mushroom", id:"ENCHANTED_BROWN_MUSHROOM", emoji:"🍄"},
-  {name:"Enchanted Huge Mushroom (Red)", id:"ENCHANTED_HUGE_MUSHROOM_1", emoji:"🍄"},
-  {name:"Enchanted Huge Mushroom (Brown)", id:"ENCHANTED_HUGE_MUSHROOM_2", emoji:"🍄"}
-];
 const SOWING_DUST_ID = "SOWING_DUST";
+
+// ---------- item catalog ----------
+// Note: some IDs below (esp. for newer/rarer garden items) are best-effort — Hypixel
+// doesn't publish a full official ID list. If "Fetch live prices" can't match an item
+// it'll tell you, and you can just type the price in manually on the Prices tab.
+const FARMING_ITEMS = [
+  // Crop Drops (tier-1, what you actually get from breaking crops)
+  {name:"Enchanted Wheat", id:"ENCHANTED_WHEAT", emoji:"🌾", category:"Crop Drops"},
+  {name:"Enchanted Seeds", id:"ENCHANTED_SEEDS", emoji:"🌾", category:"Crop Drops"},
+  {name:"Enchanted Carrot", id:"ENCHANTED_CARROT", emoji:"🥕", category:"Crop Drops"},
+  {name:"Enchanted Potato", id:"ENCHANTED_POTATO", emoji:"🥔", category:"Crop Drops"},
+  {name:"Enchanted Pumpkin", id:"ENCHANTED_PUMPKIN", emoji:"🎃", category:"Crop Drops"},
+  {name:"Enchanted Melon", id:"ENCHANTED_MELON", emoji:"🍉", category:"Crop Drops"},
+  {name:"Enchanted Sugar Cane", id:"ENCHANTED_SUGAR_CANE", emoji:"🎋", category:"Crop Drops"},
+  {name:"Enchanted Cactus Green", id:"ENCHANTED_CACTUS_GREEN", emoji:"🌵", category:"Crop Drops"},
+  {name:"Enchanted Cocoa Beans", id:"ENCHANTED_COCOA", emoji:"🍫", category:"Crop Drops"},
+  {name:"Enchanted Nether Wart", id:"ENCHANTED_NETHER_STALK", emoji:"🫘", category:"Crop Drops"},
+  {name:"Enchanted Red Mushroom", id:"ENCHANTED_RED_MUSHROOM", emoji:"🍄", category:"Crop Drops"},
+  {name:"Enchanted Brown Mushroom", id:"ENCHANTED_BROWN_MUSHROOM", emoji:"🍄", category:"Crop Drops"},
+  {name:"Enchanted Sunflower", id:"ENCHANTED_SUNFLOWER", emoji:"🌻", category:"Crop Drops"},
+  {name:"Enchanted Moonflower", id:"ENCHANTED_MOONFLOWER", emoji:"🌙", category:"Crop Drops"},
+  {name:"Enchanted Wild Rose", id:"ENCHANTED_WILD_ROSE", emoji:"🌹", category:"Crop Drops"},
+  {name:"Enchanted Paper", id:"ENCHANTED_PAPER", emoji:"📄", category:"Crop Drops"},
+  // Crafted-up tier-2 items (still loggable directly if you get them as drops, e.g. from Pests)
+  {name:"Enchanted Hay Bale", id:"ENCHANTED_HAY_BLOCK", emoji:"🌾", category:"Crop Drops"},
+  {name:"Box of Seeds", id:"BOX_OF_SEEDS", emoji:"🌾", category:"Crop Drops"},
+  {name:"Enchanted Golden Carrot", id:"ENCHANTED_GOLDEN_CARROT", emoji:"🥕", category:"Crop Drops"},
+  {name:"Enchanted Baked Potato", id:"ENCHANTED_BAKED_POTATO", emoji:"🥔", category:"Crop Drops"},
+  {name:"Polished Pumpkin", id:"POLISHED_PUMPKIN", emoji:"🎃", category:"Crop Drops"},
+  {name:"Enchanted Melon Block", id:"ENCHANTED_MELON_BLOCK", emoji:"🍉", category:"Crop Drops"},
+  {name:"Enchanted Sugar", id:"ENCHANTED_SUGAR", emoji:"🎋", category:"Crop Drops"},
+  {name:"Enchanted Cactus", id:"ENCHANTED_CACTUS", emoji:"🌵", category:"Crop Drops"},
+  {name:"Enchanted Cookie", id:"ENCHANTED_COOKIE", emoji:"🍪", category:"Crop Drops"},
+  {name:"Mutant Nether Wart", id:"MUTANT_NETHER_STALK", emoji:"🫘", category:"Crop Drops"},
+  {name:"Compacted Sunflower", id:"COMPACTED_SUNFLOWER", emoji:"🌻", category:"Crop Drops"},
+  {name:"Compacted Moonflower", id:"COMPACTED_MOONFLOWER", emoji:"🌙", category:"Crop Drops"},
+  {name:"Compacted Wild Rose", id:"COMPACTED_WILD_ROSE", emoji:"🌹", category:"Crop Drops"},
+
+  // Specialty Crops (rare-crop drops from Cropie/Squash/Fermento/Helianthus armor sets)
+  {name:"Cropie", id:"CROPIE", emoji:"✨", category:"Specialty Crops"},
+  {name:"Squash", id:"SQUASH", emoji:"✨", category:"Specialty Crops"},
+  {name:"Fermento", id:"FERMENTO", emoji:"✨", category:"Specialty Crops"},
+  {name:"Helianthus", id:"HELIANTHUS", emoji:"✨", category:"Specialty Crops"},
+  {name:"Warty", id:"WARTY", emoji:"✨", category:"Specialty Crops"},
+
+  // Pest Bait (10% chance to drop from any killed pest)
+  {name:"Compost", id:"COMPOST", emoji:"🪱", category:"Pest Bait"},
+  {name:"Plant Matter", id:"PLANT_MATTER", emoji:"🌿", category:"Pest Bait"},
+  {name:"Dung", id:"DUNG", emoji:"💩", category:"Pest Bait"},
+  {name:"Honey Jar", id:"HONEY_JAR", emoji:"🍯", category:"Pest Bait"},
+  {name:"Tasty Cheese", id:"TASTY_CHEESE", emoji:"🧀", category:"Pest Bait"},
+  {name:"Jelly", id:"JELLY", emoji:"🍇", category:"Pest Bait"},
+  {name:"Moondew", id:"MOONDEW", emoji:"🌙", category:"Pest Bait"},
+
+  // Rare Pest Drops
+  {name:"Vinyl", id:"VINYL", emoji:"💿", category:"Rare Pest Drops", npcOnly:true, defaultNpc:50000},
+  {name:"Slug Pet (Epic)", id:"SLUG_PET_EPIC", emoji:"🐌", category:"Rare Pest Drops", npcOnly:true, defaultNpc:500000},
+  {name:"Slug Pet (Legendary)", id:"SLUG_PET_LEGENDARY", emoji:"🐌", category:"Rare Pest Drops", npcOnly:true, defaultNpc:5000000},
+  {name:"Overclocker 3000", id:"OVERCLOCKER_3000", emoji:"⚙️", category:"Rare Pest Drops", npcOnly:true, defaultNpc:250000},
+  {name:"Bookworm's Favorite Book", id:"BOOKWORMS_FAVORITE_BOOK", emoji:"📖", category:"Rare Pest Drops"}
+];
+const CATEGORY_ORDER = ["Crop Drops","Specialty Crops","Pest Bait","Rare Pest Drops"];
+
+// Craft-up chains: base drop -> what it crafts into, and the default ratio (base units per craft).
+// 160:1 is the standard Hypixel enchanted-tier ratio (confirmed for Wheat->Hay Bale and
+// Pumpkin->Polished Pumpkin) — used as the default for the rest too, but every ratio is
+// editable on the Prices tab in case a specific one differs.
+const CRAFT_CHAINS = {
+  "Enchanted Wheat": {target:"Enchanted Hay Bale", targetId:"ENCHANTED_HAY_BLOCK", ratio:160},
+  "Enchanted Seeds": {target:"Box of Seeds", targetId:"BOX_OF_SEEDS", ratio:160},
+  "Enchanted Red Mushroom": {target:"Enchanted Red Mushroom Block", targetId:"ENCHANTED_HUGE_MUSHROOM_1", ratio:160},
+  "Enchanted Brown Mushroom": {target:"Enchanted Brown Mushroom Block", targetId:"ENCHANTED_HUGE_MUSHROOM_2", ratio:160},
+  "Enchanted Potato": {target:"Enchanted Baked Potato", targetId:"ENCHANTED_BAKED_POTATO", ratio:160},
+  "Enchanted Carrot": {target:"Enchanted Golden Carrot", targetId:"ENCHANTED_GOLDEN_CARROT", ratio:160},
+  "Enchanted Melon": {target:"Enchanted Melon Block", targetId:"ENCHANTED_MELON_BLOCK", ratio:160},
+  "Enchanted Cactus Green": {target:"Enchanted Cactus", targetId:"ENCHANTED_CACTUS", ratio:160},
+  "Enchanted Sunflower": {target:"Compacted Sunflower", targetId:"COMPACTED_SUNFLOWER", ratio:160},
+  "Enchanted Moonflower": {target:"Compacted Moonflower", targetId:"COMPACTED_MOONFLOWER", ratio:160},
+  "Enchanted Wild Rose": {target:"Compacted Wild Rose", targetId:"COMPACTED_WILD_ROSE", ratio:160},
+  "Enchanted Nether Wart": {target:"Mutant Nether Wart", targetId:"MUTANT_NETHER_STALK", ratio:160},
+  "Enchanted Sugar Cane": {target:"Enchanted Sugar", targetId:"ENCHANTED_SUGAR", ratio:160},
+  "Enchanted Pumpkin": {target:"Polished Pumpkin", targetId:"POLISHED_PUMPKIN", ratio:160},
+  "Enchanted Cocoa Beans": {target:"Enchanted Cookie", targetId:"ENCHANTED_COOKIE", ratio:160}
+};
+
+function itemMeta(name){ return FARMING_ITEMS.find(f=>f.name===name); }
+
+// ---------- number parsing / formatting ----------
+// Lets you type "6k", "1.5m", "2b" anywhere a quantity/price is entered; it's converted
+// to an exact integer on blur. Everything CALCULATED or displayed always shows the full
+// number with commas — shorthand is only ever an input convenience, never an output.
+function parseShorthand(v){
+  if(v==null) return 0;
+  let s = String(v).trim().toLowerCase().replace(/,/g,"");
+  if(s==="") return 0;
+  const m = s.match(/^(-?\d+(\.\d+)?)\s*([kmb])?$/);
+  if(!m){ const n = parseFloat(s); return isNaN(n)?0:n; }
+  let num = parseFloat(m[1]);
+  if(m[3]==="k") num*=1e3; else if(m[3]==="m") num*=1e6; else if(m[3]==="b") num*=1e9;
+  return num;
+}
+function fmtInt(n){ return Math.round(Number(n)||0).toLocaleString("en-US"); }
+function attachShorthand(el){
+  el.addEventListener("blur", ()=>{
+    if(el.value.trim()==="") return;
+    el.value = fmtInt(parseShorthand(el.value));
+  });
+}
 
 // ---------- local storage (works once hosted on GitHub Pages; falls back to in-memory here) ----------
 let memFallback = {};
@@ -239,8 +326,10 @@ const Store = {
 
 let sessions = Store.get("ft3000_sessions", []);
 let customCrops = Store.get("ft3000_customCrops", []);
-let prices = Store.get("ft3000_prices", {});          // { itemName: {bazaar, npc} }
+let prices = Store.get("ft3000_prices", {});              // { itemName: {bazaar, npc} }
 let settings = Store.get("ft3000_settings", {jsonbinId:"", jsonbinKey:""});
+let cropPresets = Store.get("ft3000_cropPresets", {});     // { cropName: [itemName, ...] }
+let craftRatios = Store.get("ft3000_craftRatios", {});     // { baseItemName: ratioOverride }
 
 let activeTab = "log";
 let activeCrop = null;
@@ -255,9 +344,24 @@ function saveSessions(){ Store.set("ft3000_sessions", sessions); }
 function saveCrops(){ Store.set("ft3000_customCrops", customCrops); }
 function savePrices(){ Store.set("ft3000_prices", prices); }
 function saveSettings(){ Store.set("ft3000_settings", settings); }
-function saveAll(){ saveSessions(); saveCrops(); savePrices(); saveSettings(); }
+function saveCropPresets(){ Store.set("ft3000_cropPresets", cropPresets); }
+function saveCraftRatios(){ Store.set("ft3000_craftRatios", craftRatios); }
+function saveAll(){ saveSessions(); saveCrops(); savePrices(); saveSettings(); saveCropPresets(); saveCraftRatios(); }
 
 function allCrops(){ return DEFAULT_CROPS.concat(customCrops); }
+
+// Seed default NPC prices (Vinyl, Slug Pets, Overclocker) the first time each item is seen,
+// without ever overwriting a price you've already set or fetched.
+function seedDefaults(){
+  let changed = false;
+  FARMING_ITEMS.forEach(f=>{
+    if((f.defaultNpc||f.defaultBazaar) && !prices[f.name]){
+      prices[f.name] = {bazaar: f.defaultBazaar||0, npc: f.defaultNpc||0};
+      changed = true;
+    }
+  });
+  if(changed) savePrices();
+}
 
 function showToast(msg, ms=3800){
   const t = document.getElementById("toast");
@@ -268,20 +372,49 @@ function showToast(msg, ms=3800){
 }
 
 // ---------- pricing ----------
-function priceInfo(item){
-  const p = prices[item] || {};
-  const bazaar = Number(p.bazaar)||0;
+function priceInfo(itemName){
+  const meta = itemMeta(itemName);
+  const p = prices[itemName] || {};
+  const bazaar = (meta && meta.npcOnly) ? 0 : (Number(p.bazaar)||0);
   const npc = Number(p.npc)||0;
   const best = Math.max(bazaar, npc);
   let method = "none";
   if(best>0) method = bazaar>=npc ? "bazaar" : "npc";
   return {bazaar, npc, best, method};
 }
+function chainTargetMeta(name){
+  return Object.values(CRAFT_CHAINS).find(c=>c.target===name) || null;
+}
 function productIdFor(name){
-  const known = FARMING_ITEMS.find(f=>f.name===name);
+  const known = itemMeta(name);
   if(known) return known.id;
+  const asTarget = chainTargetMeta(name);
+  if(asTarget) return asTarget.targetId;
   if(name.trim().toLowerCase()==="sowing dust") return SOWING_DUST_ID;
   return name.trim().toUpperCase().replace(/[^A-Z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+}
+function ratioFor(baseItem){
+  const chain = CRAFT_CHAINS[baseItem];
+  if(!chain) return null;
+  const override = craftRatios[baseItem];
+  return (override!=null && override>0) ? override : chain.ratio;
+}
+function craftSuggestion(itemName, qty){
+  const chain = CRAFT_CHAINS[itemName];
+  if(!chain || !qty || qty<=0) return null;
+  const ratio = ratioFor(itemName);
+  if(!ratio || ratio<=0) return null;
+  const rawPrice = priceInfo(itemName).best;
+  const targetPrice = priceInfo(chain.target).best;
+  if(targetPrice<=0) return null;
+  const crafted = Math.floor(qty/ratio);
+  if(crafted<=0) return null;
+  const leftover = qty - crafted*ratio;
+  const rawValue = qty*rawPrice;
+  const craftedValue = crafted*targetPrice + leftover*rawPrice;
+  const diff = craftedValue - rawValue;
+  if(diff<=0) return null;
+  return {target:chain.target, crafted, diff};
 }
 
 // ---------- calculations ----------
@@ -308,6 +441,8 @@ function cropSummary(crop){
 }
 function allKnownItems(){
   const set = new Set();
+  FARMING_ITEMS.forEach(f=>set.add(f.name));
+  Object.values(CRAFT_CHAINS).forEach(c=>set.add(c.target));
   sessions.forEach(s=>(s.drops||[]).forEach(d=>{ if(d.item) set.add(d.item); }));
   Object.keys(prices).forEach(k=>set.add(k));
   currentDrops.forEach(d=>{ if(d.item) set.add(d.item); });
@@ -335,21 +470,22 @@ async function fetchLivePrices(){
     let matched = 0;
     const unmatched = [];
     items.forEach(name=>{
+      const meta = itemMeta(name);
       const pid = productIdFor(name);
       const prod = bazaarData.products[pid];
-      const bazaarPrice = (prod && prod.quick_status && typeof prod.quick_status.sellPrice==="number") ? prod.quick_status.sellPrice : null;
+      const bazaarPrice = (!meta || !meta.npcOnly) && prod && prod.quick_status && typeof prod.quick_status.sellPrice==="number" ? prod.quick_status.sellPrice : null;
       const npcPrice = npcMap.hasOwnProperty(pid) ? npcMap[pid] : null;
       if(bazaarPrice!=null || npcPrice!=null){
         prices[name] = prices[name] || {};
         if(bazaarPrice!=null) prices[name].bazaar = Math.round(bazaarPrice*10)/10;
         if(npcPrice!=null) prices[name].npc = npcPrice;
         matched++;
-      } else {
+      } else if(!(prices[name] && (prices[name].bazaar || prices[name].npc))){
         unmatched.push(name);
       }
     });
     savePrices();
-    showToast(`Updated ${matched} of ${items.length} items.` + (unmatched.length ? ` No match for: ${unmatched.join(", ")} — set those manually.` : ""), 6500);
+    showToast(`Updated ${matched} of ${items.length} items.` + (unmatched.length ? ` No match for: ${unmatched.slice(0,8).join(", ")}${unmatched.length>8?" …":""} — set those manually.` : ""), 6500);
     render();
   }catch(err){
     showToast("Couldn't reach the Hypixel API from here — enter prices manually. This should work fine once hosted on GitHub Pages.", 5500);
@@ -380,7 +516,11 @@ function renderCropPackets(container){
   html += "</div>";
   container.innerHTML = html;
   container.querySelectorAll(".packet[data-crop]").forEach(el=>{
-    el.addEventListener("click", ()=>{ activeCrop = el.dataset.crop; editingSessionId=null; currentDrops=[{id:dropRowCount++, item:"", qty:"", custom:false}]; render(); });
+    el.addEventListener("click", ()=>{
+      activeCrop = el.dataset.crop; editingSessionId=null;
+      currentDrops = dropRowsFromPreset(activeCrop);
+      render();
+    });
   });
   document.getElementById("addCropBtn").addEventListener("click", ()=>{
     const name = prompt("Name the crop (e.g. Wild Rose, an event crop, etc):");
@@ -388,9 +528,25 @@ function renderCropPackets(container){
       const n = name.trim();
       if(!allCrops().includes(n)){ customCrops.push(n); saveCrops(); }
       activeCrop = n;
+      currentDrops = dropRowsFromPreset(activeCrop);
       render();
     }
   });
+}
+
+// Loads the saved drop-item list for a crop (presets). Quantities always start blank —
+// only WHICH items are tracked gets remembered, never how many.
+function dropRowsFromPreset(crop){
+  const list = cropPresets[crop] || [];
+  if(list.length===0) return [{id:dropRowCount++, item:"", qty:"", custom:false}];
+  return list.map(name=>({id:dropRowCount++, item:name, qty:"", custom: !itemMeta(name)}));
+}
+// Grows (never shrinks) a crop's preset with any new items logged this session.
+function updatePresetFromSubmission(crop, drops){
+  const existing = new Set(cropPresets[crop]||[]);
+  let changed = !cropPresets[crop];
+  drops.forEach(d=>{ if(!existing.has(d.item)){ existing.add(d.item); changed = true; } });
+  if(changed){ cropPresets[crop] = Array.from(existing); saveCropPresets(); }
 }
 
 function renderLog(){
@@ -399,7 +555,7 @@ function renderLog(){
 
   let html = `<div class="card">
     <h2>Log a farming session</h2>
-    <p class="sub">Pick a crop, fill in your session stats, note every enchanted drop, then fetch live prices to see what the session was worth.</p>
+    <p class="sub">Pick a crop, fill in your session stats, note every enchanted drop, then fetch live prices to see what the session was worth. Quantities and prices accept shorthand like <b>6k</b> or <b>1.5m</b> — they'll convert to exact numbers.</p>
     <div id="packetHolder"></div>
 
     <form id="sessionForm">
@@ -412,7 +568,7 @@ function renderLog(){
       <div class="grid">
         <div><label>Bonus Pest Chance (%)</label><input type="number" id="f_bpc" min="0" step="1" placeholder="e.g. 220"></div>
         <div><label>Pests Killed</label><input type="number" id="f_pests" min="0" step="1" placeholder="e.g. 38"></div>
-        <div><label>Sowing Dust Gained</label><input type="number" id="f_dust" min="0" step="1" placeholder="e.g. 1500"></div>
+        <div><label>Sowing Dust Gained</label><input type="text" inputmode="decimal" id="f_dust" placeholder="e.g. 1500 or 1.5k"></div>
         <div><label>Notes</label><input type="text" id="f_notes" placeholder="optional"></div>
       </div>
 
@@ -423,6 +579,7 @@ function renderLog(){
           <button type="button" class="btn ghost small" id="addDropRow">+ Add drop</button>
           <button type="button" class="btn amber small" id="fetchPricesLog">⟳ Fetch live prices</button>
         </div>
+        <div class="preset-chips" id="presetChips"></div>
       </div>
 
       <div class="preview-panel" id="previewPanel"></div>
@@ -437,7 +594,9 @@ function renderLog(){
 
   renderCropPackets(document.getElementById("packetHolder"));
   renderDropRows();
+  renderPresetChips();
   recalcPreview();
+  attachShorthand(document.getElementById("f_dust"));
 
   document.getElementById("addDropRow").addEventListener("click", ()=>{
     currentDrops.push({id:dropRowCount++, item:"", qty:"", custom:false});
@@ -450,21 +609,52 @@ function renderLog(){
     if(["f_duration","f_dust"].includes(e.target.id)) recalcPreview();
   });
   const cancelBtn = document.getElementById("cancelEdit");
-  if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editingSessionId=null; currentDrops=[{id:dropRowCount++,item:"",qty:"",custom:false}]; render(); });
+  if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editingSessionId=null; currentDrops=dropRowsFromPreset(activeCrop); render(); });
+}
+
+function renderPresetChips(){
+  const holder = document.getElementById("presetChips");
+  if(!holder) return;
+  const list = cropPresets[activeCrop]||[];
+  if(list.length===0){ holder.innerHTML = ""; return; }
+  holder.innerHTML = `<div class="id-hint" style="margin-bottom:6px;">Saved drop list for ${escapeHtml(activeCrop)} — loads automatically next time:</div>` +
+    list.map(name=>`<span class="drop-chip">${escapeHtml(name)} <span data-unpin="${escapeAttr(name)}" style="cursor:pointer;color:var(--rust);margin-left:4px;" title="Remove from saved list">✕</span></span>`).join("");
+  holder.querySelectorAll("[data-unpin]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      cropPresets[activeCrop] = (cropPresets[activeCrop]||[]).filter(n=>n!==el.dataset.unpin);
+      saveCropPresets();
+      renderPresetChips();
+    });
+  });
+}
+
+function optgroupsHtml(selectedItem){
+  let html = `<option value="">— select item —</option>`;
+  CATEGORY_ORDER.forEach(cat=>{
+    const items = FARMING_ITEMS.filter(f=>f.category===cat);
+    if(items.length===0) return;
+    html += `<optgroup label="${escapeAttr(cat)}">`;
+    items.forEach(f=>{
+      html += `<option value="${escapeAttr(f.name)}" ${selectedItem===f.name?"selected":""}>${f.emoji} ${escapeHtml(f.name)}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  html += `<option value="__custom__">✎ Other / custom item…</option>`;
+  return html;
 }
 
 function renderDropRows(){
   const holder = document.getElementById("dropsHolder");
   let html = "";
   currentDrops.forEach(d=>{
-    const isCustom = d.custom || (d.item && !FARMING_ITEMS.some(f=>f.name===d.item));
+    const isCustom = d.custom || (d.item && !itemMeta(d.item));
     if(isCustom){
       html += `<div class="drop-row" data-id="${d.id}">
         <div>
           <input type="text" placeholder="custom item name" class="drop-item-custom" value="${escapeAttr(d.item)}">
           <div class="id-hint">custom item — set its price on the Prices tab</div>
         </div>
-        <input type="number" min="0" step="1" placeholder="qty" class="drop-qty" value="${escapeAttr(d.qty)}">
+        <input type="text" inputmode="decimal" placeholder="qty (e.g. 6k)" class="drop-qty" value="${escapeAttr(d.qty)}">
         <div style="display:flex;gap:4px;">
           <button type="button" class="switch-mode" data-listmode="${d.id}" title="Pick from list instead">☰</button>
           <button type="button" class="rm" data-rm="${d.id}">✕</button>
@@ -473,14 +663,10 @@ function renderDropRows(){
     } else {
       html += `<div class="drop-row" data-id="${d.id}">
         <div>
-          <select class="drop-item-select">
-            <option value="">— select item —</option>
-            ${FARMING_ITEMS.map(f=>`<option value="${escapeAttr(f.name)}" ${d.item===f.name?"selected":""}>${f.emoji} ${escapeHtml(f.name)}</option>`).join("")}
-            <option value="__custom__">✎ Other / custom item…</option>
-          </select>
+          <select class="drop-item-select">${optgroupsHtml(d.item)}</select>
           ${d.item ? `<div class="id-hint">${escapeHtml(productIdFor(d.item))}</div>` : ""}
         </div>
-        <input type="number" min="0" step="1" placeholder="qty" class="drop-qty" value="${escapeAttr(d.qty)}">
+        <input type="text" inputmode="decimal" placeholder="qty (e.g. 6k)" class="drop-qty" value="${escapeAttr(d.qty)}">
         <button type="button" class="rm" data-rm="${d.id}">✕</button>
       </div>`;
     }
@@ -499,7 +685,9 @@ function renderDropRows(){
     el.addEventListener("input", ()=>{ currentDrops[idx].item = el.value; recalcPreview(); });
   });
   holder.querySelectorAll(".drop-qty").forEach((el, idx)=>{
+    attachShorthand(el);
     el.addEventListener("input", ()=>{ currentDrops[idx].qty = el.value; recalcPreview(); });
+    el.addEventListener("blur", ()=>{ currentDrops[idx].qty = el.value; recalcPreview(); });
   });
   holder.querySelectorAll("[data-listmode]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
@@ -527,30 +715,35 @@ function recalcPreview(){
   const durationEl = document.getElementById("f_duration");
   const dustEl = document.getElementById("f_dust");
   const duration = durationEl ? Number(durationEl.value)||0 : 0;
-  const dust = dustEl ? Number(dustEl.value)||0 : 0;
+  const dust = dustEl ? parseShorthand(dustEl.value) : 0;
 
-  const rows = currentDrops.filter(d=>d.item && Number(d.qty)>0);
+  const rows = currentDrops.filter(d=>d.item && parseShorthand(d.qty)>0);
   let total = 0;
   let rowsHtml = "";
   rows.forEach(d=>{
+    const qty = parseShorthand(d.qty);
     const pi = priceInfo(d.item);
-    const sub = pi.best * Number(d.qty);
+    const sub = pi.best * qty;
     total += sub;
     const badge = pi.method==="bazaar" ? '<span class="badge bazaar">Bazaar</span>' : pi.method==="npc" ? '<span class="badge npc">NPC</span>' : '<span class="badge none">no price</span>';
     rowsHtml += `<tr>
       <td>${escapeHtml(d.item)}</td>
-      <td class="num">${Number(d.qty).toLocaleString()}</td>
+      <td class="num">${fmtInt(qty)}</td>
       <td>${badge}</td>
-      <td class="num">${Math.round(pi.best).toLocaleString()}</td>
-      <td class="num">${Math.round(sub).toLocaleString()}</td>
+      <td class="num">${fmtInt(pi.best)}</td>
+      <td class="num">${fmtInt(sub)}</td>
     </tr>`;
+    const sugg = craftSuggestion(d.item, qty);
+    if(sugg){
+      rowsHtml += `<tr><td colspan="5" class="drop-hint-row" style="border-bottom:1px dashed var(--line);">🔨 Better to craft into <b>${fmtInt(sugg.crafted)}× ${escapeHtml(sugg.target)}</b> instead of selling raw — worth <b>+${fmtInt(sugg.diff)}</b> more coins</td></tr>`;
+    }
   });
   if(dust>0){
     const pi = priceInfo("Sowing Dust");
     const sub = pi.best*dust;
     total += sub;
     const badge = pi.method==="bazaar" ? '<span class="badge bazaar">Bazaar</span>' : pi.method==="npc" ? '<span class="badge npc">NPC</span>' : '<span class="badge none">no price</span>';
-    rowsHtml += `<tr><td>Sowing Dust</td><td class="num">${dust.toLocaleString()}</td><td>${badge}</td><td class="num">${Math.round(pi.best).toLocaleString()}</td><td class="num">${Math.round(sub).toLocaleString()}</td></tr>`;
+    rowsHtml += `<tr><td>Sowing Dust</td><td class="num">${fmtInt(dust)}</td><td>${badge}</td><td class="num">${fmtInt(pi.best)}</td><td class="num">${fmtInt(sub)}</td></tr>`;
   }
 
   const cph = duration>0 ? total/(duration/60) : 0;
@@ -559,8 +752,8 @@ function recalcPreview(){
     <h2 style="font-size:15px;margin-bottom:10px;">Session value (live preview)</h2>
     ${rowsHtml ? `<table><thead><tr><th>Drop</th><th class="num">Qty</th><th>Priced via</th><th class="num">Coins/unit</th><th class="num">Subtotal</th></tr></thead><tbody>${rowsHtml}</tbody></table>` : '<p style="color:var(--ink-soft);font-size:12.5px;">Add drops and quantities above to see their value.</p>'}
     <div class="preview-total">
-      <div class="stat-box"><div class="k">Total coins so far</div><div class="v">${Math.round(total).toLocaleString()}</div></div>
-      <div class="stat-box"><div class="k">${duration>0 ? `At this rate (${duration}m) → per hour` : "Enter duration to see coins/h"}</div><div class="v">${duration>0 ? Math.round(cph).toLocaleString() : "—"}</div></div>
+      <div class="stat-box"><div class="k">Total coins so far</div><div class="v">${fmtInt(total)}</div></div>
+      <div class="stat-box"><div class="k">${duration>0 ? `At this rate (${duration}m) → per hour` : "Enter duration to see coins/h"}</div><div class="v">${duration>0 ? fmtInt(cph) : "—"}</div></div>
     </div>`;
 }
 
@@ -568,8 +761,8 @@ function onSubmitSession(e){
   e.preventDefault();
   const duration = document.getElementById("f_duration").value;
   if(!duration || Number(duration)<=0){ showToast("Enter how many minutes you farmed."); return; }
-  const drops = currentDrops.filter(d=>d.item && d.item.trim() && Number(d.qty)>0)
-    .map(d=>({item:d.item.trim(), qty:Number(d.qty)}));
+  const drops = currentDrops.filter(d=>d.item && d.item.trim() && parseShorthand(d.qty)>0)
+    .map(d=>({item:d.item.trim(), qty:parseShorthand(d.qty)}));
 
   const sessionObj = {
     id: editingSessionId || (Date.now()+"_"+Math.random().toString(36).slice(2,7)),
@@ -580,7 +773,7 @@ function onSubmitSession(e){
     overbloom: Number(document.getElementById("f_overbloom").value)||0,
     bpc: Number(document.getElementById("f_bpc").value)||0,
     pests: Number(document.getElementById("f_pests").value)||0,
-    sowingDust: Number(document.getElementById("f_dust").value)||0,
+    sowingDust: parseShorthand(document.getElementById("f_dust").value),
     notes: document.getElementById("f_notes").value || "",
     drops
   };
@@ -594,8 +787,9 @@ function onSubmitSession(e){
     sessions.push(sessionObj);
     showToast("Session logged.");
   }
+  updatePresetFromSubmission(activeCrop, drops);
   saveSessions();
-  currentDrops = [{id:dropRowCount++, item:"", qty:"", custom:false}];
+  currentDrops = dropRowsFromPreset(activeCrop);
   render();
 }
 
@@ -633,16 +827,16 @@ function renderHistoryTable(filter){
   list.forEach(s=>{
     const coins = sessionCoins(s);
     const cph = coinsPerHour(s);
-    const dropsHtml = (s.drops&&s.drops.length) ? s.drops.map(d=>`<span class="drop-chip">${escapeHtml(d.item)} ×${d.qty.toLocaleString()}</span>`).join("") : '<span style="color:var(--muted);">—</span>';
+    const dropsHtml = (s.drops&&s.drops.length) ? s.drops.map(d=>`<span class="drop-chip">${escapeHtml(d.item)} ×${fmtInt(d.qty)}</span>`).join("") : '<span style="color:var(--muted);">—</span>';
     html += `<tr>
       <td class="mono">${s.date||""}</td>
       <td>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</td>
       <td class="num">${s.duration}</td>
       <td class="num">${s.pests||0}</td>
-      <td class="num">${(s.sowingDust||0).toLocaleString()}</td>
+      <td class="num">${fmtInt(s.sowingDust||0)}</td>
       <td>${dropsHtml}</td>
-      <td class="num">${Math.round(coins).toLocaleString()}</td>
-      <td class="num">${Math.round(cph).toLocaleString()}</td>
+      <td class="num">${fmtInt(coins)}</td>
+      <td class="num">${fmtInt(cph)}</td>
       <td>
         <button class="btn ghost small" data-edit="${s.id}">Edit</button>
         <button class="btn danger small" data-del="${s.id}">Del</button>
@@ -657,7 +851,7 @@ function renderHistoryTable(filter){
       if(!s) return;
       editingSessionId = s.id;
       activeCrop = s.crop;
-      currentDrops = (s.drops&&s.drops.length? s.drops : [{item:"",qty:""}]).map(d=>({id:dropRowCount++, item:d.item, qty:d.qty, custom:!FARMING_ITEMS.some(f=>f.name===d.item)}));
+      currentDrops = (s.drops&&s.drops.length? s.drops : [{item:"",qty:""}]).map(d=>({id:dropRowCount++, item:d.item, qty:String(d.qty), custom:!itemMeta(d.item)}));
       activeTab = "log";
       render();
       setTimeout(()=>{
@@ -667,7 +861,7 @@ function renderHistoryTable(filter){
         document.getElementById("f_overbloom").value = s.overbloom||"";
         document.getElementById("f_bpc").value = s.bpc||"";
         document.getElementById("f_pests").value = s.pests||"";
-        document.getElementById("f_dust").value = s.sowingDust||"";
+        document.getElementById("f_dust").value = s.sowingDust ? fmtInt(s.sowingDust) : "";
         document.getElementById("f_notes").value = s.notes||"";
         recalcPreview();
       },0);
@@ -688,7 +882,7 @@ function renderPrices(){
   const items = allKnownItems();
   let html = `<div class="card">
     <h2>Bazaar &amp; NPC prices</h2>
-    <p class="sub">Both sell routes, side by side, so you can see which pays more. The higher one is what's used for your coin totals.</p>
+    <p class="sub">Both sell routes, side by side, so you can see which pays more. The higher one is what's used for your coin totals. Prices accept shorthand (500k, 5m) — they lock in as exact numbers when you click away.</p>
     <div class="fetch-bar">
       <button class="btn amber" id="fetchPrices">⟳ Fetch live prices</button>
       <button class="btn ghost" id="addPriceItem">+ Add item manually</button>
@@ -700,9 +894,14 @@ function renderPrices(){
       <div class="id-hint" style="font-weight:600;">Best</div>
     </div>
     <div id="priceRows"></div>
+
+    <h2 style="font-size:16px;margin:30px 0 4px;">Crafting conversions</h2>
+    <p class="sub">Used for the "craft into X instead" suggestion when logging a session. 160:1 is the standard ratio for most enchanted-tier crafts — edit any that you know differ.</p>
+    <div id="convRows"></div>
   </div>`;
   content.innerHTML = html;
   renderPriceRows(items);
+  renderConvRows();
   document.getElementById("fetchPrices").addEventListener("click", fetchLivePrices);
   document.getElementById("addPriceItem").addEventListener("click", ()=>{
     const name = prompt("Item name (as it'll appear when you log drops):");
@@ -720,26 +919,70 @@ function renderPriceRows(items){
     holder.innerHTML = `<div class="empty">No items yet — log a session or add an item manually.</div>`;
     return;
   }
-  let html = "";
+  // group by category, custom/unknown items land in a trailing "Other" group
+  const byCat = {};
+  CATEGORY_ORDER.forEach(c=>byCat[c]=[]);
+  byCat["Other"] = [];
   items.forEach(name=>{
-    const p = prices[name] || {bazaar:0, npc:0};
-    const pi = priceInfo(name);
-    const badge = pi.method==="bazaar" ? '<span class="badge bazaar">Bazaar</span>' : pi.method==="npc" ? '<span class="badge npc">NPC</span>' : '<span class="badge none">—</span>';
-    html += `<div class="price-row">
-      <div>${escapeHtml(name)}<div class="id">${escapeHtml(productIdFor(name))}</div></div>
-      <input type="number" min="0" step="0.1" class="price-input" data-item="${escapeAttr(name)}" data-field="bazaar" value="${p.bazaar||0}">
-      <input type="number" min="0" step="0.1" class="price-input" data-item="${escapeAttr(name)}" data-field="npc" value="${p.npc||0}">
-      <div>${badge}</div>
-    </div>`;
+    const meta = itemMeta(name);
+    const cat = meta ? meta.category : (chainTargetMeta(name) ? "Crop Drops" : (name==="Sowing Dust" ? "Crop Drops" : "Other"));
+    (byCat[cat]||byCat["Other"]).push(name);
+  });
+
+  let html = "";
+  Object.keys(byCat).forEach(cat=>{
+    const list = byCat[cat];
+    if(list.length===0) return;
+    html += `<div class="price-cat">${escapeHtml(cat)}</div>`;
+    list.forEach(name=>{
+      const meta = itemMeta(name);
+      const p = prices[name] || {bazaar:0, npc:0};
+      const pi = priceInfo(name);
+      const badge = pi.method==="bazaar" ? '<span class="badge bazaar">Bazaar</span>' : pi.method==="npc" ? '<span class="badge npc">NPC</span>' : '<span class="badge none">—</span>';
+      const bazaarField = (meta && meta.npcOnly)
+        ? `<input type="text" value="NPC only" disabled>`
+        : `<input type="text" inputmode="decimal" class="price-input" data-item="${escapeAttr(name)}" data-field="bazaar" value="${p.bazaar?fmtInt(p.bazaar):0}">`;
+      html += `<div class="price-row">
+        <div>${escapeHtml(name)}<div class="id">${escapeHtml(productIdFor(name))}</div></div>
+        ${bazaarField}
+        <input type="text" inputmode="decimal" class="price-input" data-item="${escapeAttr(name)}" data-field="npc" value="${p.npc?fmtInt(p.npc):0}">
+        <div>${badge}</div>
+      </div>`;
+    });
   });
   holder.innerHTML = html;
   holder.querySelectorAll(".price-input").forEach(inp=>{
+    attachShorthand(inp);
     inp.addEventListener("change", ()=>{
       const item = inp.dataset.item, field = inp.dataset.field;
       prices[item] = prices[item] || {bazaar:0, npc:0};
-      prices[item][field] = Number(inp.value)||0;
+      prices[item][field] = parseShorthand(inp.value);
       savePrices();
       render();
+    });
+  });
+}
+
+function renderConvRows(){
+  const holder = document.getElementById("convRows");
+  let html = "";
+  Object.keys(CRAFT_CHAINS).forEach(base=>{
+    const chain = CRAFT_CHAINS[base];
+    const ratio = ratioFor(base);
+    html += `<div class="conv-row">
+      <div>${escapeHtml(base)}</div>
+      <div class="arrow">→</div>
+      <div>${escapeHtml(chain.target)}</div>
+      <input type="number" min="1" step="1" class="ratio-input" data-base="${escapeAttr(base)}" value="${ratio}">
+    </div>`;
+  });
+  holder.innerHTML = html;
+  holder.querySelectorAll(".ratio-input").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const base = inp.dataset.base;
+      const val = Number(inp.value)||CRAFT_CHAINS[base].ratio;
+      craftRatios[base] = val;
+      saveCraftRatios();
     });
   });
 }
@@ -761,16 +1004,16 @@ function renderSummary(){
   const overallCph = totalMin>0 ? totalCoins/(totalMin/60) : 0;
   const best = summaries.slice().sort((a,b)=>b.avgCph-a.avgCph)[0];
 
-  html += `<div class="best-banner">🏆 Best crop right now: <b>${escapeHtml(best.crop)}</b> — ${Math.round(best.avgCph).toLocaleString()} coins/h</div>`;
+  html += `<div class="best-banner">🏆 Best crop right now: <b>${escapeHtml(best.crop)}</b> — ${fmtInt(best.avgCph)} coins/h</div>`;
 
   html += `<div class="summary-grid">
     <div class="stat-box"><div class="k">Total time farmed</div><div class="v">${formatHours(totalMin)}</div></div>
-    <div class="stat-box"><div class="k">Total coins earned</div><div class="v">${Math.round(totalCoins).toLocaleString()}</div></div>
-    <div class="stat-box"><div class="k">Overall coins / h</div><div class="v">${Math.round(overallCph).toLocaleString()}</div></div>
-    <div class="stat-box"><div class="k">Total pests killed</div><div class="v">${totalPests.toLocaleString()}</div></div>
+    <div class="stat-box"><div class="k">Total coins earned</div><div class="v">${fmtInt(totalCoins)}</div></div>
+    <div class="stat-box"><div class="k">Overall coins / h</div><div class="v">${fmtInt(overallCph)}</div></div>
+    <div class="stat-box"><div class="k">Total pests killed</div><div class="v">${fmtInt(totalPests)}</div></div>
   </div>`;
 
-  html += `<div class="stat-box" style="margin-bottom:24px;"><div class="k">Total sowing dust collected</div><div class="v">${totalDust.toLocaleString()}</div></div>`;
+  html += `<div class="stat-box" style="margin-bottom:24px;"><div class="k">Total sowing dust collected</div><div class="v">${fmtInt(totalDust)}</div></div>`;
 
   const maxCph = Math.max(...summaries.map(s=>s.avgCph), 1);
   html += `<h2 style="font-size:15px;margin-bottom:14px;">Coins/hour by crop</h2>`;
@@ -779,7 +1022,7 @@ function renderSummary(){
     html += `<div class="bar-row">
       <div>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <div class="num">${Math.round(s.avgCph).toLocaleString()}</div>
+      <div class="num">${fmtInt(s.avgCph)}</div>
     </div>`;
   });
 
@@ -792,10 +1035,10 @@ function renderSummary(){
       <td>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</td>
       <td class="num">${s.sessionCount}</td>
       <td class="num">${formatHours(s.totalMin)}</td>
-      <td class="num">${s.totalPests.toLocaleString()}</td>
-      <td class="num">${s.totalDust.toLocaleString()}</td>
-      <td class="num">${Math.round(s.totalCoins).toLocaleString()}</td>
-      <td class="num">${Math.round(s.avgCph).toLocaleString()}</td>
+      <td class="num">${fmtInt(s.totalPests)}</td>
+      <td class="num">${fmtInt(s.totalDust)}</td>
+      <td class="num">${fmtInt(s.totalCoins)}</td>
+      <td class="num">${fmtInt(s.avgCph)}</td>
     </tr>`;
   });
   html += `</tbody></table></div>`;
@@ -818,12 +1061,13 @@ function renderData(){
 
     <div class="data-section">
       <h3>☁ JSONBin sync (optional)</h3>
-      <p>Create a free bin at <span class="mono">jsonbin.io</span>, paste its Bin ID and X-Master-Key below, then push or pull to sync across devices — useful since GitHub Pages has no server of its own.</p>
+      <p>1) Make a free account at <span class="mono">jsonbin.io</span> and grab your <b>X-Master-Key</b> from Account → API Keys. 2) Paste it below. 3) Click <b>Create new bin</b> — it makes an empty bin for you and fills in the Bin ID automatically (jsonbin won't let you create a truly blank one, so this sends an empty dataset for you). After that, use Push/Pull to sync across devices.</p>
       <div class="field-row">
-        <div><label>Bin ID</label><input type="text" id="jsonbinId" value="${escapeAttr(settings.jsonbinId||"")}" placeholder="e.g. 65f1a2b3c4d5e6f7"></div>
+        <div><label>Bin ID</label><input type="text" id="jsonbinId" value="${escapeAttr(settings.jsonbinId||"")}" placeholder="filled in automatically, or paste your own"></div>
         <div><label>X-Master-Key</label><input type="text" id="jsonbinKey" value="${escapeAttr(settings.jsonbinKey||"")}" placeholder="your JSONBin API key"></div>
       </div>
       <div class="row-actions" style="margin-top:0;">
+        <button class="btn ghost" id="jsonbinCreate">＋ Create new bin</button>
         <button class="btn amber" id="jsonbinPush">☁ Push to JSONBin</button>
         <button class="btn amber" id="jsonbinPull">☁ Pull from JSONBin</button>
       </div>
@@ -843,19 +1087,21 @@ function renderData(){
   });
   document.getElementById("jsonbinId").addEventListener("change", (e)=>{ settings.jsonbinId = e.target.value.trim(); saveSettings(); });
   document.getElementById("jsonbinKey").addEventListener("change", (e)=>{ settings.jsonbinKey = e.target.value.trim(); saveSettings(); });
+  document.getElementById("jsonbinCreate").addEventListener("click", jsonbinCreate);
   document.getElementById("jsonbinPush").addEventListener("click", jsonbinPush);
   document.getElementById("jsonbinPull").addEventListener("click", jsonbinPull);
   document.getElementById("resetBtn").addEventListener("click", ()=>{
-    if(!confirm("This deletes every logged session, price and custom crop in this browser. Continue?")) return;
-    sessions = []; customCrops = []; prices = {};
+    if(!confirm("This deletes every logged session, price, preset and custom crop in this browser. Continue?")) return;
+    sessions = []; customCrops = []; prices = {}; cropPresets = {}; craftRatios = {};
     saveAll();
+    seedDefaults();
     showToast("All data cleared.");
     render();
   });
 }
 
 function exportJSON(){
-  const payload = {sessions, prices, customCrops, exportedAt: new Date().toISOString()};
+  const payload = {sessions, prices, customCrops, cropPresets, craftRatios, exportedAt: new Date().toISOString()};
   const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -871,6 +1117,7 @@ function importJSONFile(file){
       const data = JSON.parse(reader.result);
       if(!confirm("Import will replace your current local data. Continue?")) return;
       sessions = data.sessions||[]; prices = data.prices||{}; customCrops = data.customCrops||[];
+      cropPresets = data.cropPresets||{}; craftRatios = data.craftRatios||{};
       saveAll();
       showToast("Imported.");
       render();
@@ -878,14 +1125,33 @@ function importJSONFile(file){
   };
   reader.readAsText(file);
 }
+async function jsonbinCreate(){
+  if(!settings.jsonbinKey){ showToast("Add your X-Master-Key first, then click Create new bin."); return; }
+  showToast("Creating a new bin…", 2000);
+  try{
+    const res = await fetch("https://api.jsonbin.io/v3/b", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","X-Master-Key":settings.jsonbinKey,"X-Bin-Name":"Farming Tracker 3000"},
+      body: JSON.stringify({sessions, prices, customCrops, cropPresets, craftRatios})
+    });
+    if(!res.ok) throw new Error("bad status");
+    const data = await res.json();
+    const id = data.metadata && data.metadata.id;
+    if(!id) throw new Error("no id returned");
+    settings.jsonbinId = id;
+    saveSettings();
+    showToast("Bin created and your current data pushed to it — the Bin ID is filled in below.");
+    render();
+  }catch(e){ showToast("Couldn't create a bin from here — double check your X-Master-Key, or create one manually at jsonbin.io and paste its Bin ID below."); }
+}
 async function jsonbinPush(){
-  if(!settings.jsonbinId || !settings.jsonbinKey){ showToast("Add your Bin ID and X-Master-Key first."); return; }
+  if(!settings.jsonbinId || !settings.jsonbinKey){ showToast("Add your Bin ID and X-Master-Key first (or click Create new bin)."); return; }
   showToast("Pushing to JSONBin…", 2000);
   try{
     const res = await fetch(`https://api.jsonbin.io/v3/b/${settings.jsonbinId}`, {
       method:"PUT",
       headers:{"Content-Type":"application/json","X-Master-Key":settings.jsonbinKey},
-      body: JSON.stringify({sessions, prices, customCrops})
+      body: JSON.stringify({sessions, prices, customCrops, cropPresets, craftRatios})
     });
     if(!res.ok) throw new Error("bad status");
     showToast("Synced to JSONBin.");
@@ -901,6 +1167,7 @@ async function jsonbinPull(){
     const rec = data.record || {};
     if(!confirm("Pull will replace your local data with the JSONBin copy. Continue?")) return;
     sessions = rec.sessions || []; prices = rec.prices || {}; customCrops = rec.customCrops || [];
+    cropPresets = rec.cropPresets || {}; craftRatios = rec.craftRatios || {};
     saveAll();
     showToast("Pulled from JSONBin.");
     render();
@@ -925,8 +1192,9 @@ tabsNav.addEventListener("click", (e)=>{
   render();
 });
 
+seedDefaults();
 activeCrop = allCrops()[0];
-currentDrops = [{id:dropRowCount++, item:"", qty:"", custom:false}];
+currentDrops = dropRowsFromPreset(activeCrop);
 render();
 </script>
 </body>
