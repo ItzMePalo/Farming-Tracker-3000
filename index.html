@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farming Tracker 3000</title>
+<style>
+  :root{
+    --soil: #1b140d;
+    --soil-2: #241b12;
+    --soil-3: #2e2216;
+    --paper: #efe3c8;
+    --paper-2: #e6d8b8;
+    --moss: #6b8e4e;
+    --moss-dark: #4a6636;
+    --moss-light: #9cbb7c;
+    --gold: #d9a441;
+    --gold-dark: #a97b28;
+    --rust: #b5502f;
+    --ink: #2b2116;
+    --ink-soft: #6b5d47;
+    --cream: #ede3ce;
+    --muted: #9c8d74;
+    --line: #3a2d1d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top left, rgba(107,142,78,0.08), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(217,164,65,0.06), transparent 55%),
+      var(--soil);
+    color:var(--cream);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px;}
+
+  /* header */
+  header.site{
+    padding:36px 0 22px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:28px;
+  }
+  header.site .eyebrow{
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:var(--moss-light);
+    margin-bottom:8px;
+  }
+  header.site h1{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size:40px;
+    margin:0 0 6px;
+    color:var(--cream);
+    letter-spacing:0.01em;
+  }
+  header.site h1 span{color:var(--gold);}
+  header.site p{
+    margin:0;
+    color:var(--muted);
+    font-size:14.5px;
+    max-width:560px;
+    line-height:1.5;
+  }
+
+  /* tabs */
+  nav.tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+  }
+  nav.tabs button{
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size:12.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:var(--soil-2);
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-bottom:none;
+    padding:10px 18px;
+    cursor:pointer;
+    border-radius:6px 6px 0 0;
+    transition:all .15s ease;
+  }
+  nav.tabs button:hover{color:var(--cream);}
+  nav.tabs button.active{
+    background:var(--paper);
+    color:var(--ink);
+    border-color:var(--paper);
+    font-weight:600;
+  }
+
+  /* card / ledger page */
+  .card{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:4px;
+    padding:28px;
+    box-shadow: 0 18px 40px -12px rgba(0,0,0,0.55);
+    background-image:
+      linear-gradient(rgba(0,0,0,0.028) 1px, transparent 1px);
+    background-size: 100% 28px;
+  }
+  .card h2{
+    font-family: Georgia, serif;
+    font-size:21px;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .card .sub{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:0 0 20px;
+  }
+
+  /* crop packets */
+  .packets{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(118px,1fr));
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .packet{
+    position:relative;
+    background:var(--soil-2);
+    border:1px dashed var(--moss);
+    border-radius:8px;
+    padding:14px 8px 10px;
+    text-align:center;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease;
+    color:var(--cream);
+  }
+  .packet:hover{transform:translateY(-3px);}
+  .packet.active{
+    background:var(--moss-dark);
+    border-style:solid;
+    border-color:var(--gold);
+  }
+  .packet .emoji{font-size:26px;display:block;margin-bottom:6px;}
+  .packet .name{font-size:12px;font-weight:600;}
+  .packet .stat{font-family:ui-monospace,monospace;font-size:10px;color:var(--gold);margin-top:4px;}
+  .packet.add{
+    border-style:dashed;
+    border-color:var(--muted);
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+  }
+  .packet.add:hover{color:var(--gold);border-color:var(--gold);}
+
+  /* form */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  .grid.two{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr);}}
+  label{
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+    font-weight:600;
+  }
+  input[type=text], input[type=number], input[type=date], select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--paper-2);
+    border-bottom:2px solid var(--ink-soft);
+    background:#fbf6ea;
+    color:var(--ink);
+    font-size:14px;
+    border-radius:3px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  input:focus, select:focus{outline:2px solid var(--moss);outline-offset:1px;}
+  .field-note{font-size:11px;color:var(--ink-soft);margin-top:4px;font-style:italic;}
+
+  .drops-section{
+    border-top:1px dashed var(--ink-soft);
+    padding-top:16px;
+    margin-top:6px;
+  }
+  .drop-row{
+    display:grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap:10px;
+    margin-bottom:8px;
+    align-items:center;
+  }
+  .drop-row button.rm{
+    background:none;border:none;color:var(--rust);cursor:pointer;font-size:16px;padding:4px 8px;
+  }
+  .btn{
+    font-family: ui-monospace, monospace;
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    padding:9px 16px;
+    border-radius:4px;
+    border:1px solid var(--moss-dark);
+    background:var(--moss);
+    color:#fff;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .btn:hover{background:var(--moss-dark);}
+  .btn.ghost{
+    background:transparent;
+    color:var(--moss-dark);
+    border:1px solid var(--moss);
+  }
+  .btn.ghost:hover{background:rgba(107,142,78,0.12);}
+  .btn.gold{background:var(--gold);border-color:var(--gold-dark);color:#2b2116;}
+  .btn.gold:hover{background:var(--gold-dark);color:#fff;}
+  .btn.small{padding:5px 10px;font-size:11px;}
+  .row-actions{display:flex;gap:8px;margin-top:20px;}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;
+    font-family: ui-monospace, monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    border-bottom:2px solid var(--ink-soft);
+    padding:8px 8px;
+  }
+  tbody td{
+    padding:9px 8px;
+    border-bottom:1px dashed var(--paper-2);
+    vertical-align:top;
+  }
+  tbody tr:hover{background:rgba(107,142,78,0.08);}
+  .mono{font-family:ui-monospace, monospace;}
+  .num{text-align:right;font-family:ui-monospace,monospace;}
+  .empty{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+  .tag{
+    display:inline-block;
+    font-size:10px;
+    font-family:ui-monospace,monospace;
+    background:var(--soil-2);
+    color:var(--gold);
+    padding:2px 7px;
+    border-radius:10px;
+    margin:0 4px 4px 0;
+  }
+  .drop-chip{
+    display:inline-block;
+    font-size:11.5px;
+    background:var(--paper-2);
+    border:1px solid var(--ink-soft);
+    padding:2px 7px;
+    border-radius:4px;
+    margin:0 4px 4px 0;
+  }
+
+  /* summary */
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  @media(max-width:640px){.summary-grid{grid-template-columns:repeat(2,1fr);}}
+  .stat-box{
+    background:var(--soil-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:14px 16px;
+  }
+  .stat-box .k{font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);font-family:ui-monospace,monospace;}
+  .stat-box .v{font-size:22px;font-weight:700;color:var(--gold);font-family:ui-monospace,monospace;margin-top:4px;}
+  .bar-row{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center;margin-bottom:10px;}
+  .bar-track{background:var(--paper-2);border-radius:4px;overflow:hidden;height:20px;}
+  .bar-fill{background:linear-gradient(90deg, var(--moss), var(--gold));height:100%;border-radius:4px;transition:width .4s ease;}
+  .best-banner{
+    background:linear-gradient(90deg, var(--moss-dark), var(--moss));
+    color:#fff;
+    padding:12px 18px;
+    border-radius:6px;
+    margin-bottom:20px;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .best-banner b{color:var(--gold);font-family:ui-monospace,monospace;}
+
+  /* prices */
+  .price-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px;}
+  .price-row .id{font-size:10.5px;color:var(--ink-soft);font-family:ui-monospace,monospace;}
+  .fetch-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--soil-3);color:var(--cream);border:1px solid var(--moss);
+    padding:12px 20px;border-radius:6px;font-size:13px;max-width:560px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);z-index:999;
+    opacity:0;transition:opacity .25s ease;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+  select.crop-filter{max-width:220px;display:inline-block;}
+  .footer-note{
+    text-align:center;color:var(--muted);font-size:11.5px;margin-top:30px;
+    font-family:ui-monospace,monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <div class="eyebrow">Hypixel Skyblock &middot; Garden Tools</div>
+    <h1>Farming Tracker <span>3000</span></h1>
+    <p>Log pest-farming sessions crop by crop, track your enchanted drops, sowing dust and pest count, and see exactly which crop is paying the best coins/hour.</p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="log" class="active">Log Session</button>
+    <button data-tab="history">History</button>
+    <button data-tab="prices">Prices</button>
+    <button data-tab="summary">Summary</button>
+  </nav>
+
+  <main id="content"></main>
+
+  <div class="footer-note">Data is stored locally to this tracker &middot; Bazaar prices are your responsibility to keep current</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_CROPS = ["Wheat","Carrot","Potato","Pumpkin","Melon","Sugar Cane","Cactus","Cocoa Beans","Nether Wart","Mushroom","Sunflower","Moonflower"];
+const CROP_EMOJI = {
+  "Wheat":"🌾","Carrot":"🥕","Potato":"🥔","Pumpkin":"🎃","Melon":"🍈",
+  "Sugar Cane":"🎋","Cactus":"🌵","Cocoa Beans":"🍫","Nether Wart":"🍷",
+  "Mushroom":"🍄","Sunflower":"🌻","Moonflower":"🌙"
+};
+const DEFAULT_EMOJI = "🌱";
+
+const ITEM_SUGGESTIONS = [
+  "Enchanted Wheat","Enchanted Bread","Enchanted Hay Bale",
+  "Enchanted Carrot","Enchanted Golden Carrot",
+  "Enchanted Potato","Enchanted Baked Potato",
+  "Enchanted Pumpkin","Enchanted Melon","Enchanted Melon Block",
+  "Enchanted Sugar Cane","Enchanted Sugar","Enchanted Paper",
+  "Enchanted Cactus","Enchanted Cactus Green",
+  "Enchanted Cocoa Beans","Enchanted Cookie",
+  "Enchanted Nether Wart","Mutant Nether Wart",
+  "Enchanted Red Mushroom","Enchanted Brown Mushroom","Enchanted Mushroom Block"
+];
+
+const PRODUCT_OVERRIDES = {
+  "enchanted nether wart":"ENCHANTED_NETHER_STALK",
+  "mutant nether wart":"MUTANT_NETHER_STALK",
+  "enchanted cocoa beans":"ENCHANTED_COCOA",
+  "sowing dust":"SOWING_DUST"
+};
+
+let sessions = [];
+let customCrops = [];
+let prices = {};
+let activeTab = "log";
+let activeCrop = null;
+let editingSessionId = null;
+let dropRowCount = 0;
+let currentDrops = []; // [{id, item, qty}]
+
+const content = document.getElementById("content");
+const tabsNav = document.getElementById("tabs");
+
+// ---------- storage helpers ----------
+async function loadState(){
+  try{
+    const r = await window.storage.get("sessions");
+    sessions = r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){ sessions = []; }
+  try{
+    const r = await window.storage.get("customCrops");
+    customCrops = r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){ customCrops = []; }
+  try{
+    const r = await window.storage.get("prices");
+    prices = r && r.value ? JSON.parse(r.value) : {};
+  }catch(e){ prices = {}; }
+}
+async function saveSessions(){
+  try{ await window.storage.set("sessions", JSON.stringify(sessions)); }
+  catch(e){ showToast("Couldn't save — storage error."); }
+}
+async function saveCrops(){
+  try{ await window.storage.set("customCrops", JSON.stringify(customCrops)); }
+  catch(e){ showToast("Couldn't save crop list — storage error."); }
+}
+async function savePrices(){
+  try{ await window.storage.set("prices", JSON.stringify(prices)); }
+  catch(e){ showToast("Couldn't save prices — storage error."); }
+}
+
+function allCrops(){ return DEFAULT_CROPS.concat(customCrops); }
+
+function showToast(msg, ms=3800){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=>t.classList.remove("show"), ms);
+}
+
+// ---------- calculations ----------
+function sessionCoins(s){
+  let total = 0;
+  (s.drops||[]).forEach(d=>{ total += (prices[d.item]||0) * (Number(d.qty)||0); });
+  total += (prices["Sowing Dust"]||0) * (Number(s.sowingDust)||0);
+  return total;
+}
+function coinsPerHour(s){
+  const mins = Number(s.duration)||0;
+  if(mins<=0) return 0;
+  return sessionCoins(s) / (mins/60);
+}
+function cropSessions(crop){ return sessions.filter(s=>s.crop===crop); }
+
+function cropSummary(crop){
+  const list = cropSessions(crop);
+  const totalMin = list.reduce((a,s)=>a+(Number(s.duration)||0),0);
+  const totalCoins = list.reduce((a,s)=>a+sessionCoins(s),0);
+  const totalPests = list.reduce((a,s)=>a+(Number(s.pests)||0),0);
+  const totalDust = list.reduce((a,s)=>a+(Number(s.sowingDust)||0),0);
+  const avgCph = totalMin>0 ? totalCoins/(totalMin/60) : 0;
+  const avgPph = totalMin>0 ? totalPests/(totalMin/60) : 0;
+  return {crop, sessionCount:list.length, totalMin, totalCoins, totalPests, totalDust, avgCph, avgPph};
+}
+
+function allKnownItems(){
+  const set = new Set();
+  sessions.forEach(s=>(s.drops||[]).forEach(d=>{ if(d.item) set.add(d.item); }));
+  Object.keys(prices).forEach(k=>set.add(k));
+  set.add("Sowing Dust");
+  return Array.from(set).sort();
+}
+
+function guessProductId(name){
+  const key = name.trim().toLowerCase();
+  if(PRODUCT_OVERRIDES[key]) return PRODUCT_OVERRIDES[key];
+  return name.trim().toUpperCase().replace(/[^A-Z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+}
+
+async function fetchBazaarPrices(){
+  showToast("Fetching live Bazaar prices…", 2000);
+  try{
+    const res = await fetch("https://api.hypixel.net/v2/skyblock/bazaar");
+    if(!res.ok) throw new Error("bad status");
+    const data = await res.json();
+    if(!data || data.success===false || !data.products) throw new Error("bad payload");
+    const items = allKnownItems();
+    let matched = 0;
+    const unmatched = [];
+    items.forEach(name=>{
+      const pid = guessProductId(name);
+      const prod = data.products[pid];
+      if(prod && prod.quick_status && typeof prod.quick_status.sellPrice==="number"){
+        prices[name] = Math.round(prod.quick_status.sellPrice*10)/10;
+        matched++;
+      } else unmatched.push(name);
+    });
+    await savePrices();
+    showToast(`Matched ${matched} of ${items.length} items to live Bazaar prices.` + (unmatched.length? ` Couldn't match: ${unmatched.join(", ")} — set those manually.`:""), 6000);
+    render();
+  }catch(err){
+    showToast("Live Bazaar fetch isn't reachable from here — just enter prices manually below.", 5000);
+  }
+}
+
+// ---------- rendering ----------
+function render(){
+  [...tabsNav.children].forEach(b=>b.classList.toggle("active", b.dataset.tab===activeTab));
+  if(activeTab==="log") renderLog();
+  else if(activeTab==="history") renderHistory();
+  else if(activeTab==="prices") renderPrices();
+  else if(activeTab==="summary") renderSummary();
+}
+
+function renderCropPackets(container, onPick){
+  let html = '<div class="packets">';
+  allCrops().forEach(c=>{
+    const s = cropSummary(c);
+    html += `<div class="packet ${c===activeCrop?'active':''}" data-crop="${escapeAttr(c)}">
+      <span class="emoji">${CROP_EMOJI[c]||DEFAULT_EMOJI}</span>
+      <span class="name">${escapeHtml(c)}</span>
+      <span class="stat">${s.sessionCount? Math.round(s.avgCph).toLocaleString()+'/h' : '—'}</span>
+    </div>`;
+  });
+  html += `<div class="packet add" id="addCropBtn" title="Add a custom crop">+</div>`;
+  html += "</div>";
+  container.innerHTML = html;
+  container.querySelectorAll(".packet[data-crop]").forEach(el=>{
+    el.addEventListener("click", ()=>{ activeCrop = el.dataset.crop; editingSessionId=null; currentDrops=[{id:dropRowCount++, item:"", qty:""}]; render(); });
+  });
+  document.getElementById("addCropBtn").addEventListener("click", ()=>{
+    const name = prompt("Name the crop (e.g. Glowstone Dust patch, event crop, etc):");
+    if(name && name.trim()){
+      const n = name.trim();
+      if(!allCrops().includes(n)){ customCrops.push(n); saveCrops(); }
+      activeCrop = n;
+      render();
+    }
+  });
+}
+
+function renderLog(){
+  if(!activeCrop) activeCrop = allCrops()[0];
+  if(currentDrops.length===0) currentDrops = [{id:dropRowCount++, item:"", qty:""}];
+
+  let html = `<div class="card">
+    <h2>Log a farming session</h2>
+    <p class="sub">Pick a crop, fill in your session stats, then note every enchanted drop you collected. Coins are calculated from the Prices tab.</p>
+    <div id="packetHolder"></div>
+
+    <form id="sessionForm">
+      <div class="grid">
+        <div><label>Date</label><input type="date" id="f_date" value="${todayISO()}"></div>
+        <div><label>Duration (minutes)</label><input type="number" id="f_duration" min="0" step="1" placeholder="e.g. 45"></div>
+        <div><label>Farming Fortune</label><input type="number" id="f_fortune" min="0" step="1" placeholder="e.g. 450"></div>
+        <div><label>Overbloom</label><input type="number" id="f_overbloom" min="0" step="1" placeholder="e.g. 180"></div>
+      </div>
+      <div class="grid">
+        <div><label>Bonus Pest Chance (%)</label><input type="number" id="f_bpc" min="0" step="1" placeholder="e.g. 220"></div>
+        <div><label>Pests Killed</label><input type="number" id="f_pests" min="0" step="1" placeholder="e.g. 38"></div>
+        <div><label>Sowing Dust Gained</label><input type="number" id="f_dust" min="0" step="1" placeholder="e.g. 1500"></div>
+        <div><label>Notes</label><input type="text" id="f_notes" placeholder="optional"></div>
+      </div>
+
+      <div class="drops-section">
+        <label style="margin-bottom:10px;">Enchanted drops this session</label>
+        <div id="dropsHolder"></div>
+        <button type="button" class="btn ghost small" id="addDropRow">+ Add drop</button>
+      </div>
+
+      <div class="row-actions">
+        <button type="submit" class="btn gold">${editingSessionId? "Save changes" : "Save session"}</button>
+        ${editingSessionId? '<button type="button" class="btn ghost" id="cancelEdit">Cancel edit</button>' : ""}
+      </div>
+    </form>
+  </div>`;
+  content.innerHTML = html;
+
+  renderCropPackets(document.getElementById("packetHolder"));
+  renderDropRows();
+
+  document.getElementById("addDropRow").addEventListener("click", ()=>{
+    currentDrops.push({id:dropRowCount++, item:"", qty:""});
+    renderDropRows();
+  });
+  document.getElementById("sessionForm").addEventListener("submit", onSubmitSession);
+  const cancelBtn = document.getElementById("cancelEdit");
+  if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editingSessionId=null; currentDrops=[{id:dropRowCount++,item:"",qty:""}]; render(); });
+}
+
+function renderDropRows(){
+  const holder = document.getElementById("dropsHolder");
+  let listId = "itemSuggestions";
+  let html = `<datalist id="${listId}">` + ITEM_SUGGESTIONS.map(i=>`<option value="${escapeAttr(i)}">`).join("") + `</datalist>`;
+  currentDrops.forEach(d=>{
+    html += `<div class="drop-row" data-id="${d.id}">
+      <input type="text" list="${listId}" placeholder="e.g. Enchanted Wheat" class="drop-item" value="${escapeAttr(d.item)}">
+      <input type="number" min="0" step="1" placeholder="qty" class="drop-qty" value="${escapeAttr(d.qty)}">
+      <button type="button" class="rm" data-rm="${d.id}">✕</button>
+    </div>`;
+  });
+  holder.innerHTML = html;
+  holder.querySelectorAll(".drop-item").forEach((el,idx)=>{
+    el.addEventListener("input", ()=>{ currentDrops[idx].item = el.value; });
+  });
+  holder.querySelectorAll(".drop-qty").forEach((el,idx)=>{
+    el.addEventListener("input", ()=>{ currentDrops[idx].qty = el.value; });
+  });
+  holder.querySelectorAll("[data-rm]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = Number(btn.dataset.rm);
+      currentDrops = currentDrops.filter(d=>d.id!==id);
+      if(currentDrops.length===0) currentDrops=[{id:dropRowCount++, item:"", qty:""}];
+      renderDropRows();
+    });
+  });
+}
+
+function onSubmitSession(e){
+  e.preventDefault();
+  const duration = document.getElementById("f_duration").value;
+  if(!duration || Number(duration)<=0){ showToast("Enter how many minutes you farmed."); return; }
+  const drops = currentDrops.filter(d=>d.item && d.item.trim() && Number(d.qty)>0)
+    .map(d=>({item:d.item.trim(), qty:Number(d.qty)}));
+
+  const sessionObj = {
+    id: editingSessionId || (Date.now()+"_"+Math.random().toString(36).slice(2,7)),
+    crop: activeCrop,
+    date: document.getElementById("f_date").value || todayISO(),
+    duration: Number(duration),
+    fortune: Number(document.getElementById("f_fortune").value)||0,
+    overbloom: Number(document.getElementById("f_overbloom").value)||0,
+    bpc: Number(document.getElementById("f_bpc").value)||0,
+    pests: Number(document.getElementById("f_pests").value)||0,
+    sowingDust: Number(document.getElementById("f_dust").value)||0,
+    notes: document.getElementById("f_notes").value || "",
+    drops
+  };
+
+  if(editingSessionId){
+    const idx = sessions.findIndex(s=>s.id===editingSessionId);
+    if(idx>-1) sessions[idx] = sessionObj;
+    editingSessionId = null;
+    showToast("Session updated.");
+  } else {
+    sessions.push(sessionObj);
+    showToast("Session logged.");
+  }
+  saveSessions();
+  currentDrops = [{id:dropRowCount++, item:"", qty:""}];
+  render();
+}
+
+function renderHistory(){
+  let html = `<div class="card">
+    <h2>Session history</h2>
+    <p class="sub">Every logged session. Filter by crop, or edit/delete a row.</p>
+    <div style="margin-bottom:16px;">
+      <label>Filter by crop</label>
+      <select class="crop-filter" id="historyFilter">
+        <option value="__all__">All crops</option>
+        ${allCrops().map(c=>`<option value="${escapeAttr(c)}" ${activeCrop===c?"selected":""}>${escapeHtml(c)}</option>`).join("")}
+      </select>
+    </div>
+    <div id="historyTable"></div>
+  </div>`;
+  content.innerHTML = html;
+  const sel = document.getElementById("historyFilter");
+  sel.value = "__all__";
+  renderHistoryTable("__all__");
+  sel.addEventListener("change", ()=>renderHistoryTable(sel.value));
+}
+
+function renderHistoryTable(filter){
+  const holder = document.getElementById("historyTable");
+  let list = filter==="__all__" ? sessions.slice() : sessions.filter(s=>s.crop===filter);
+  list.sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+  if(list.length===0){
+    holder.innerHTML = `<div class="empty">No sessions logged yet${filter!=="__all__"?" for "+escapeHtml(filter):""}. Head to Log Session to add your first one.</div>`;
+    return;
+  }
+  let html = `<table><thead><tr>
+    <th>Date</th><th>Crop</th><th>Min</th><th>Pests</th><th>Dust</th><th>Drops</th><th class="num">Coins</th><th class="num">Coins/h</th><th></th>
+  </tr></thead><tbody>`;
+  list.forEach(s=>{
+    const coins = sessionCoins(s);
+    const cph = coinsPerHour(s);
+    const dropsHtml = (s.drops&&s.drops.length) ? s.drops.map(d=>`<span class="drop-chip">${escapeHtml(d.item)} ×${d.qty.toLocaleString()}</span>`).join("") : '<span style="color:#9c8d74;">—</span>';
+    html += `<tr>
+      <td class="mono">${s.date||""}</td>
+      <td>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</td>
+      <td class="num">${s.duration}</td>
+      <td class="num">${s.pests||0}</td>
+      <td class="num">${(s.sowingDust||0).toLocaleString()}</td>
+      <td>${dropsHtml}</td>
+      <td class="num">${Math.round(coins).toLocaleString()}</td>
+      <td class="num">${Math.round(cph).toLocaleString()}</td>
+      <td>
+        <button class="btn ghost small" data-edit="${s.id}">Edit</button>
+        <button class="btn ghost small" data-del="${s.id}" style="border-color:#b5502f;color:#b5502f;">Del</button>
+      </td>
+    </tr>`;
+  });
+  html += "</tbody></table>";
+  holder.innerHTML = html;
+  holder.querySelectorAll("[data-edit]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const s = sessions.find(x=>x.id===btn.dataset.edit);
+      if(!s) return;
+      editingSessionId = s.id;
+      activeCrop = s.crop;
+      currentDrops = (s.drops&&s.drops.length? s.drops : [{item:"",qty:""}]).map(d=>({id:dropRowCount++, item:d.item, qty:d.qty}));
+      activeTab = "log";
+      render();
+      setTimeout(()=>{
+        document.getElementById("f_date").value = s.date||todayISO();
+        document.getElementById("f_duration").value = s.duration||"";
+        document.getElementById("f_fortune").value = s.fortune||"";
+        document.getElementById("f_overbloom").value = s.overbloom||"";
+        document.getElementById("f_bpc").value = s.bpc||"";
+        document.getElementById("f_pests").value = s.pests||"";
+        document.getElementById("f_dust").value = s.sowingDust||"";
+        document.getElementById("f_notes").value = s.notes||"";
+      },0);
+    });
+  });
+  holder.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(!confirm("Delete this session? This can't be undone.")) return;
+      sessions = sessions.filter(x=>x.id!==btn.dataset.del);
+      saveSessions();
+      renderHistoryTable(filter);
+      showToast("Session deleted.");
+    });
+  });
+}
+
+function renderPrices(){
+  const items = allKnownItems();
+  let html = `<div class="card">
+    <h2>Bazaar prices</h2>
+    <p class="sub">Prices used to value your drops and sowing dust. Try a live fetch, or set them by hand — either works.</p>
+    <div class="fetch-bar">
+      <button class="btn gold" id="fetchPrices">⟳ Fetch live Bazaar prices</button>
+      <button class="btn ghost" id="addPriceItem">+ Add item to price manually</button>
+    </div>
+    <div id="priceRows"></div>
+  </div>`;
+  content.innerHTML = html;
+  renderPriceRows(items);
+  document.getElementById("fetchPrices").addEventListener("click", fetchBazaarPrices);
+  document.getElementById("addPriceItem").addEventListener("click", ()=>{
+    const name = prompt("Item name (as it'll appear when you log drops):");
+    if(name && name.trim()){
+      if(!(name.trim() in prices)) prices[name.trim()] = 0;
+      savePrices();
+      render();
+    }
+  });
+}
+
+function renderPriceRows(items){
+  const holder = document.getElementById("priceRows");
+  if(items.length===0){
+    holder.innerHTML = `<div class="empty">No items yet — log a session or add an item manually.</div>`;
+    return;
+  }
+  let html = "";
+  items.forEach(name=>{
+    html += `<div class="price-row">
+      <div>${escapeHtml(name)}<div class="id">${escapeHtml(guessProductId(name))}</div></div>
+      <input type="number" min="0" step="0.1" class="price-input" data-item="${escapeAttr(name)}" value="${prices[name]??0}">
+      <div class="mono" style="font-size:12px;color:#6b5d47;">coins / unit</div>
+    </div>`;
+  });
+  holder.innerHTML = html;
+  holder.querySelectorAll(".price-input").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      prices[inp.dataset.item] = Number(inp.value)||0;
+      savePrices();
+      render();
+    });
+  });
+}
+
+function renderSummary(){
+  const summaries = allCrops().map(cropSummary).filter(s=>s.sessionCount>0);
+  let html = `<div class="card"><h2>Summary</h2><p class="sub">Aggregated across every logged session.</p>`;
+
+  if(summaries.length===0){
+    html += `<div class="empty">Nothing to summarize yet — log a session to see stats here.</div></div>`;
+    content.innerHTML = html;
+    return;
+  }
+
+  const totalMin = summaries.reduce((a,s)=>a+s.totalMin,0);
+  const totalCoins = summaries.reduce((a,s)=>a+s.totalCoins,0);
+  const totalPests = summaries.reduce((a,s)=>a+s.totalPests,0);
+  const totalDust = summaries.reduce((a,s)=>a+s.totalDust,0);
+  const overallCph = totalMin>0 ? totalCoins/(totalMin/60) : 0;
+  const best = summaries.slice().sort((a,b)=>b.avgCph-a.avgCph)[0];
+
+  html += `<div class="best-banner">🏆 Best crop right now: <b>${escapeHtml(best.crop)}</b> — ${Math.round(best.avgCph).toLocaleString()} coins/h</div>`;
+
+  html += `<div class="summary-grid">
+    <div class="stat-box"><div class="k">Total time farmed</div><div class="v">${formatHours(totalMin)}</div></div>
+    <div class="stat-box"><div class="k">Total coins earned</div><div class="v">${Math.round(totalCoins).toLocaleString()}</div></div>
+    <div class="stat-box"><div class="k">Overall coins / h</div><div class="v">${Math.round(overallCph).toLocaleString()}</div></div>
+    <div class="stat-box"><div class="k">Total pests killed</div><div class="v">${totalPests.toLocaleString()}</div></div>
+  </div>`;
+
+  html += `<div class="stat-box" style="margin-bottom:24px;"><div class="k">Total sowing dust collected</div><div class="v">${totalDust.toLocaleString()}</div></div>`;
+
+  const maxCph = Math.max(...summaries.map(s=>s.avgCph), 1);
+  html += `<h2 style="font-size:16px;margin-bottom:14px;">Coins/hour by crop</h2>`;
+  summaries.slice().sort((a,b)=>b.avgCph-a.avgCph).forEach(s=>{
+    const pct = Math.max(4, Math.round((s.avgCph/maxCph)*100));
+    html += `<div class="bar-row">
+      <div>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="num">${Math.round(s.avgCph).toLocaleString()}</div>
+    </div>`;
+  });
+
+  html += `<h2 style="font-size:16px;margin:26px 0 14px;">Per-crop breakdown</h2>
+  <table><thead><tr>
+    <th>Crop</th><th class="num">Sessions</th><th class="num">Time</th><th class="num">Pests</th><th class="num">Dust</th><th class="num">Coins</th><th class="num">Coins/h</th>
+  </tr></thead><tbody>`;
+  summaries.slice().sort((a,b)=>b.avgCph-a.avgCph).forEach(s=>{
+    html += `<tr>
+      <td>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</td>
+      <td class="num">${s.sessionCount}</td>
+      <td class="num">${formatHours(s.totalMin)}</td>
+      <td class="num">${s.totalPests.toLocaleString()}</td>
+      <td class="num">${s.totalDust.toLocaleString()}</td>
+      <td class="num">${Math.round(s.totalCoins).toLocaleString()}</td>
+      <td class="num">${Math.round(s.avgCph).toLocaleString()}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  content.innerHTML = html;
+}
+
+// ---------- utils ----------
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function formatHours(mins){
+  const h = Math.floor(mins/60), m = Math.round(mins%60);
+  return h>0 ? `${h}h ${m}m` : `${m}m`;
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+// ---------- init ----------
+tabsNav.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button[data-tab]");
+  if(!btn) return;
+  activeTab = btn.dataset.tab;
+  editingSessionId = null;
+  render();
+});
+
+(async function init(){
+  await loadState();
+  activeCrop = allCrops()[0];
+  currentDrops = [{id:dropRowCount++, item:"", qty:""}];
+  render();
+})();
+</script>
+</body>
+</html>
