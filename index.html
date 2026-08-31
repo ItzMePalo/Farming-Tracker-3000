@@ -104,6 +104,7 @@
   .drop-row input, .drop-row select{margin:0;}
   .drop-row > div:first-child, .drop-row > input, .drop-row > .rm, .drop-row > div:last-child{padding-top:0;}
   .drop-hint-row{margin:-4px 0 8px;padding:6px 10px;background:rgba(201,154,78,0.08);border:1px dashed var(--amber-dim);border-radius:4px;font-size:11px;color:var(--amber);}
+  .family-hint-row{margin:-4px 0 8px;padding:6px 10px;background:rgba(95,138,76,0.10);border:1px dashed var(--moss-dark);border-radius:4px;font-size:11px;color:var(--moss-light);}
   .drop-row button.rm{background:none;border:none;color:var(--rust);cursor:pointer;font-size:16px;padding:4px 8px;}
   .drop-row .switch-mode{background:none;border:1px solid var(--line);color:var(--ink-soft);border-radius:4px;padding:8px 9px;cursor:pointer;font-size:11px;}
   .drop-row .switch-mode:hover{border-color:var(--moss);color:var(--ink);}
@@ -261,7 +262,6 @@ const FARMING_ITEMS = [
   {name:"Honey Jar", id:"HONEY_JAR", emoji:"🍯", category:"Pest Bait"},
   {name:"Tasty Cheese", id:"TASTY_CHEESE", emoji:"🧀", category:"Pest Bait"},
   {name:"Jelly", id:"JELLY", emoji:"🍇", category:"Pest Bait"},
-  {name:"Moondew", id:"MOONDEW", emoji:"🌙", category:"Pest Bait"},
 
   // Rare Pest Drops
   {name:"Vinyl", id:"VINYL", emoji:"💿", category:"Rare Pest Drops", npcOnly:true, defaultNpc:50000},
@@ -281,9 +281,51 @@ const FARMING_ITEMS = [
   {name:"Mechamind Chip", id:"MECHAMIND_CHIP", emoji:"💾", category:"Garden Chips"},
   {name:"Sowledge Chip", id:"SOWLEDGE_CHIP", emoji:"💾", category:"Garden Chips"},
   {name:"Synthesis Chip", id:"SYNTHESIS_CHIP", emoji:"💾", category:"Garden Chips"},
-  {name:"Vermin Vaporizer Chip", id:"VERMIN_VAPORIZER_CHIP", emoji:"💾", category:"Garden Chips"}
+  {name:"Vermin Vaporizer Chip", id:"VERMIN_VAPORIZER_CHIP", emoji:"💾", category:"Garden Chips"},
+
+  // Harvest Feast (yearly Autumn event) — Seasoning itself auto-donates and isn't a physical
+  // item, but the crop-specific rare material + everything crafted from it are trackable.
+  // Best-effort names/IDs reconstructed from patch notes; fix any wrong bazaar ID on this
+  // tab if a fetch doesn't match.
+  {name:"Cornucopia", id:"CORNUCOPIA", emoji:"🌽", category:"Harvest Feast"},
+  {name:"Cornucopia Crystal", id:"CORNUCOPIA_CRYSTAL", emoji:"🌽", category:"Harvest Feast"},
+  {name:"Not Very Moldy Bread", id:"NOT_VERY_MOLDY_BREAD", emoji:"🌽", category:"Harvest Feast"},
+  {name:"Carrot Zest", id:"CARROT_ZEST", emoji:"🥕", category:"Harvest Feast"},
+  {name:"Carrot Colored Vinyl Set", id:"CARROT_COLORED_VINYL_SET", emoji:"🥕", category:"Harvest Feast"},
+  {name:"Poignant Carrot Bait", id:"POIGNANT_CARROT_BAIT", emoji:"🥕", category:"Harvest Feast"},
+  {name:"Deepfries", id:"DEEPFRIES", emoji:"🍟", category:"Harvest Feast"},
+  {name:"Hashbrown", id:"HASHBROWN", emoji:"🍟", category:"Harvest Feast"},
+  {name:"Aggourdian", id:"AGGOURDIAN", emoji:"🎃", category:"Harvest Feast"},
+  {name:"Turbo Gourd", id:"TURBO_GOURD", emoji:"🎃", category:"Harvest Feast"},
+  {name:"Enchanted Turbo Gourd", id:"ENCHANTED_TURBO_GOURD", emoji:"🎃", category:"Harvest Feast"},
+  {name:"Overpriced Drink", id:"OVERPRICED_DRINK", emoji:"🎃", category:"Harvest Feast"},
+  {name:"Cane Knot", id:"CANE_KNOT", emoji:"🎋", category:"Harvest Feast"},
+  {name:"Speed Relic", id:"SPEED_RELIC", emoji:"🎋", category:"Harvest Feast"},
+  {name:"Unalloyed Speed", id:"UNALLOYED_SPEED", emoji:"🎋", category:"Harvest Feast"},
+  {name:"Thermodynamic Helmet", id:"THERMODYNAMIC_HELMET", emoji:"🎋", category:"Harvest Feast"},
+  {name:"Melon Juice", id:"MELON_JUICE", emoji:"🍉", category:"Harvest Feast"},
+  {name:"Melon Juice Mixin", id:"MELON_JUICE_MIXIN", emoji:"🍉", category:"Harvest Feast"},
+  {name:"Trunk Polish", id:"TRUNK_POLISH", emoji:"🍉", category:"Harvest Feast"},
+  {name:"Cactus Flower", id:"CACTUS_FLOWER", emoji:"🌵", category:"Harvest Feast"},
+  {name:"Potted Cactus", id:"POTTED_CACTUS", emoji:"🌵", category:"Harvest Feast"},
+  {name:"Prickly Creeper", id:"PRICKLY_CREEPER", emoji:"🌵", category:"Harvest Feast"},
+  {name:"Designer Coffee Beans", id:"DESIGNER_COFFEE_BEANS", emoji:"🍫", category:"Harvest Feast"},
+  {name:"Bug Blender", id:"BUG_BLENDER", emoji:"🍫", category:"Harvest Feast"},
+  {name:"Cocoaleech Shard", id:"COCOALEECH_SHARD", emoji:"🍫", category:"Harvest Feast"},
+  {name:"Feastfungus", id:"FEASTFUNGUS", emoji:"🍄", category:"Harvest Feast"},
+  {name:"Fragranced Brown Mushroom Paste", id:"FRAGRANCED_BROWN_MUSHROOM_PASTE", emoji:"🍄", category:"Harvest Feast"},
+  {name:"Fungal Tip Jar", id:"FUNGAL_TIP_JAR", emoji:"🍄", category:"Harvest Feast"},
+  {name:"Botroot", id:"BOTROOT", emoji:"🫘", category:"Harvest Feast"},
+  {name:"Jacob Participation Medal", id:"JACOB_PARTICIPATION_MEDAL", emoji:"🫘", category:"Harvest Feast"},
+  {name:"Salted Sunflower Seeds", id:"SALTED_SUNFLOWER_SEEDS", emoji:"🌻", category:"Harvest Feast"},
+  {name:"Sunflower Butter", id:"SUNFLOWER_BUTTER", emoji:"🌻", category:"Harvest Feast"},
+  {name:"Buzzybee Fantabulous Disco Destination", id:"BUZZYBEE_FANTABULOUS_DISCO_DESTINATION", emoji:"🌻", category:"Harvest Feast"},
+  {name:"Crystalized Moonlight", id:"CRYSTALIZED_MOONLIGHT", emoji:"🌙", category:"Harvest Feast"},
+  {name:"Moondew", id:"MOONDEW", emoji:"🌙", category:"Harvest Feast"},
+  {name:"Floral Gelatin", id:"FLORAL_GELATIN", emoji:"🌹", category:"Harvest Feast"},
+  {name:"Royal Jelly", id:"ROYAL_JELLY", emoji:"🌹", category:"Harvest Feast"}
 ];
-const CATEGORY_ORDER = ["Crop Drops","Specialty Crops","Pest Bait","Rare Pest Drops","Garden Chips"];
+const CATEGORY_ORDER = ["Crop Drops","Specialty Crops","Pest Bait","Rare Pest Drops","Garden Chips","Harvest Feast"];
 
 // Craft-up chains: base drop -> what it crafts into, and the default ratio (base units per craft).
 // 160:1 is the standard Hypixel enchanted-tier ratio (confirmed for Wheat->Hay Bale and
@@ -313,15 +355,54 @@ function itemMeta(name){ return FARMING_ITEMS.find(f=>f.name===name); }
 // Lets you type "6k", "1.5m", "2b" anywhere a quantity/price is entered; it's converted
 // to an exact integer on blur. Everything CALCULATED or displayed always shows the full
 // number with commas — shorthand is only ever an input convenience, never an output.
+// Parses "6k", "1.5m", plain numbers, AND simple arithmetic like "1645000-245000" or
+// "1.6m - 245k" (shorthand suffixes work inside expressions too). Falls back to 0 for
+// anything unparseable. No eval() — small hand-rolled +,-,*,/,() parser for safety.
 function parseShorthand(v){
   if(v==null) return 0;
   let s = String(v).trim().toLowerCase().replace(/,/g,"");
   if(s==="") return 0;
-  const m = s.match(/^(-?\d+(\.\d+)?)\s*([kmb])?$/);
-  if(!m){ const n = parseFloat(s); return isNaN(n)?0:n; }
-  let num = parseFloat(m[1]);
-  if(m[3]==="k") num*=1e3; else if(m[3]==="m") num*=1e6; else if(m[3]==="b") num*=1e9;
-  return num;
+  // fast path: plain number (+ optional shorthand suffix), no operators
+  const simple = s.match(/^(-?\d+(\.\d+)?)\s*([kmb])?$/);
+  if(simple){
+    let num = parseFloat(simple[1]);
+    if(simple[3]==="k") num*=1e3; else if(simple[3]==="m") num*=1e6; else if(simple[3]==="b") num*=1e9;
+    return num;
+  }
+  if(!/^[\d.\s()kmb+\-*/]+$/.test(s)) { const n = parseFloat(s); return isNaN(n)?0:n; }
+  const tokens = s.match(/\d+(\.\d+)?[kmb]?|[+\-*/()]/g);
+  if(!tokens || tokens.length===0) return 0;
+  let pos = 0;
+  const peek = ()=>tokens[pos];
+  const take = ()=>tokens[pos++];
+  function parseNumTok(tok){
+    const m = tok.match(/^(\d+(\.\d+)?)([kmb])?$/);
+    if(!m) return NaN;
+    let n = parseFloat(m[1]);
+    if(m[3]==="k") n*=1e3; else if(m[3]==="m") n*=1e6; else if(m[3]==="b") n*=1e9;
+    return n;
+  }
+  function parseFactor(){
+    const tok = peek();
+    if(tok===undefined) return NaN;
+    if(tok==="("){ take(); const v = parseExprLevel(); if(peek()===")") take(); return v; }
+    if(tok==="-"){ take(); return -parseFactor(); }
+    if(tok==="+"){ take(); return parseFactor(); }
+    take();
+    return parseNumTok(tok);
+  }
+  function parseTerm(){
+    let v = parseFactor();
+    while(peek()==="*"||peek()==="/"){ const op=take(); const rhs=parseFactor(); v = op==="*" ? v*rhs : v/rhs; }
+    return v;
+  }
+  function parseExprLevel(){
+    let v = parseTerm();
+    while(peek()==="+"||peek()==="-"){ const op=take(); const rhs=parseTerm(); v = op==="+" ? v+rhs : v-rhs; }
+    return v;
+  }
+  const result = parseExprLevel();
+  return isNaN(result) ? 0 : result;
 }
 function fmtInt(n){ return Math.round(Number(n)||0).toLocaleString("en-US"); }
 // Prices (bazaar/npc/coins) can have real decimals — show one decimal place only when
@@ -603,8 +684,9 @@ function renderLog(){
       </div>
       <div class="grid">
         <div><label>Bonus Pest Chance (%)</label><input type="number" id="f_bpc" min="0" step="1" placeholder="e.g. 220"></div>
-        <div><label>Pests Killed</label><input type="number" id="f_pests" min="0" step="1" placeholder="e.g. 38"></div>
-        <div><label>Sowing Dust Gained</label><input type="text" inputmode="decimal" id="f_dust" placeholder="e.g. 1500 or 1.5k"></div>
+        <div><label>Pests Killed</label><input type="text" inputmode="decimal" id="f_pests" placeholder="e.g. 38 or 1645000-245000"></div>
+        <div><label>Sowdust Gained</label><input type="text" inputmode="decimal" id="f_dust" placeholder="e.g. 1500 or 1.5k"></div>
+        <div><label>Kernels Gained (Grand Feast)</label><input type="text" inputmode="decimal" id="f_kernels" placeholder="optional, e.g. 12"></div>
         <div><label>Notes</label><input type="text" id="f_notes" placeholder="optional"></div>
       </div>
 
@@ -633,6 +715,8 @@ function renderLog(){
   renderPresetChips();
   recalcPreview();
   attachShorthand(document.getElementById("f_dust"));
+  attachShorthand(document.getElementById("f_pests"));
+  attachShorthand(document.getElementById("f_kernels"));
 
   document.getElementById("addDropRow").addEventListener("click", ()=>{
     currentDrops.push({id:dropRowCount++, item:"", qty:"", custom:false});
@@ -643,7 +727,7 @@ function renderLog(){
   const sessionFormEl = document.getElementById("sessionForm");
   sessionFormEl.addEventListener("submit", onSubmitSession);
   sessionFormEl.addEventListener("input", (e)=>{
-    if(["f_duration","f_dust"].includes(e.target.id)) recalcPreview();
+    if(["f_duration","f_dust","f_kernels"].includes(e.target.id)) recalcPreview();
   });
   // Enter moves to the next field instead of submitting the whole session.
   sessionFormEl.addEventListener("keydown", (e)=>{
@@ -759,6 +843,15 @@ function renderDropRows(){
   });
 }
 
+// Returns the "base" item name of a base<->target craft pair (e.g. both "Enchanted Potato"
+// and "Enchanted Baked Potato" resolve to "Enchanted Potato"), or null if the item isn't
+// part of a known chain. Used to combine base+target drops from the same family together.
+function familyKey(item){
+  if(CRAFT_CHAINS[item]) return item;
+  const baseKey = Object.keys(CRAFT_CHAINS).find(k=>CRAFT_CHAINS[k].target===item);
+  return baseKey || null;
+}
+
 function recalcPreview(){
   const panel = document.getElementById("previewPanel");
   if(!panel) return;
@@ -770,6 +863,7 @@ function recalcPreview(){
   const rows = currentDrops.filter(d=>d.item && parseShorthand(d.qty)>0);
   let total = 0;
   let rowsHtml = "";
+  const familyTotals = {}; // baseName -> {target, ratio, baseQty, targetQty}
   rows.forEach(d=>{
     const qty = parseShorthand(d.qty);
     const pi = priceInfo(d.item);
@@ -787,16 +881,34 @@ function recalcPreview(){
     if(sugg){
       rowsHtml += `<tr><td colspan="5" class="drop-hint-row" style="border-bottom:1px dashed var(--line);">🔨 Better to craft into <b>${fmtInt(sugg.crafted)}× ${escapeHtml(sugg.target)}</b> instead of selling raw — worth <b>+${fmtPrice(sugg.diff)}</b> more coins</td></tr>`;
     }
+    const fam = familyKey(d.item);
+    if(fam){
+      familyTotals[fam] = familyTotals[fam] || {target: CRAFT_CHAINS[fam].target, ratio: ratioFor(fam), baseQty:0, targetQty:0};
+      if(d.item===fam) familyTotals[fam].baseQty += qty; else familyTotals[fam].targetQty += qty;
+    }
+  });
+  // If you logged both the base drop (e.g. Enchanted Potato) AND its already-crafted final
+  // version (e.g. Enchanted Baked Potato) in the same session, show them counted together.
+  Object.keys(familyTotals).forEach(base=>{
+    const f = familyTotals[base];
+    if(f.baseQty>0 && f.targetQty>0){
+      const rawEquivalent = f.baseQty + f.targetQty*f.ratio;
+      const combinedValue = priceInfo(base).best*f.baseQty + priceInfo(f.target).best*f.targetQty;
+      rowsHtml += `<tr><td colspan="5" class="family-hint-row">🔗 ${escapeHtml(base)} + ${escapeHtml(f.target)} counted together: ${fmtInt(rawEquivalent)} ${escapeHtml(base)}-equivalent — ${fmtPrice(combinedValue)} coins combined</td></tr>`;
+    }
   });
   if(dust>0){
     const pi = priceInfo("Sowing Dust");
     const sub = pi.best*dust;
     total += sub;
     const badge = pi.method==="bazaar" ? '<span class="badge bazaar">Bazaar</span>' : pi.method==="npc" ? '<span class="badge npc">NPC</span>' : '<span class="badge none">no price</span>';
-    rowsHtml += `<tr><td>Sowing Dust</td><td class="num">${fmtInt(dust)}</td><td>${badge}</td><td class="num">${fmtPrice(pi.best)}</td><td class="num">${fmtPrice(sub)}</td></tr>`;
+    rowsHtml += `<tr><td>Sowdust</td><td class="num">${fmtInt(dust)}</td><td>${badge}</td><td class="num">${fmtPrice(pi.best)}</td><td class="num">${fmtPrice(sub)}</td></tr>`;
   }
 
   const cph = duration>0 ? total/(duration/60) : 0;
+  const kernelsEl = document.getElementById("f_kernels");
+  const kernels = kernelsEl ? parseShorthand(kernelsEl.value) : 0;
+  const kph = (duration>0 && kernels>0) ? kernels/(duration/60) : 0;
 
   panel.innerHTML = `
     <h2 style="font-size:15px;margin-bottom:10px;">Session value (live preview)</h2>
@@ -804,6 +916,7 @@ function recalcPreview(){
     <div class="preview-total">
       <div class="stat-box"><div class="k">Total coins so far</div><div class="v">${fmtPrice(total)}</div></div>
       <div class="stat-box"><div class="k">${duration>0 ? `At this rate (${duration}m) → per hour` : "Enter duration to see coins/h"}</div><div class="v">${duration>0 ? fmtPrice(cph) : "—"}</div></div>
+      ${kernels>0 ? `<div class="stat-box"><div class="k">Kernels / hour</div><div class="v">${duration>0 ? fmtPrice(kph) : "—"}</div></div>` : ""}
     </div>`;
 }
 
@@ -822,8 +935,9 @@ function onSubmitSession(e){
     fortune: Number(document.getElementById("f_fortune").value)||0,
     overbloom: Number(document.getElementById("f_overbloom").value)||0,
     bpc: Number(document.getElementById("f_bpc").value)||0,
-    pests: Number(document.getElementById("f_pests").value)||0,
+    pests: parseShorthand(document.getElementById("f_pests").value),
     sowingDust: parseShorthand(document.getElementById("f_dust").value),
+    kernels: parseShorthand(document.getElementById("f_kernels").value),
     notes: document.getElementById("f_notes").value || "",
     drops
   };
@@ -889,6 +1003,7 @@ function sessionDetailHtml(s){
       <div class="stat-box"><div class="k">Bonus Pest Chance</div><div class="v">${s.bpc?fmtInt(s.bpc)+"%":"—"}</div></div>
       <div class="stat-box"><div class="k">Pests Killed</div><div class="v">${s.pests?fmtInt(s.pests):"—"}</div></div>
     </div>
+    ${s.kernels ? `<div class="stat-box" style="margin-bottom:16px;max-width:260px;"><div class="k">Kernels (${s.duration?fmtPrice(s.kernels/(s.duration/60))+"/h":fmtInt(s.kernels)})</div><div class="v">${fmtInt(s.kernels)}</div></div>` : ""}
     ${s.notes ? `<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;"><b style="color:var(--ink);">Notes:</b> ${escapeHtml(s.notes)}</p>` : ""}
     ${rows ? `<table><thead><tr><th>Drop</th><th class="num">Qty</th><th class="num">Coins/unit</th><th class="num">Subtotal</th></tr></thead><tbody>${rows}</tbody></table>` : '<p style="color:var(--ink-soft);font-size:12.5px;">No drops logged for this session.</p>'}
   </td></tr>`;
@@ -951,8 +1066,9 @@ function renderHistoryTable(filter){
         document.getElementById("f_fortune").value = s.fortune||"";
         document.getElementById("f_overbloom").value = s.overbloom||"";
         document.getElementById("f_bpc").value = s.bpc||"";
-        document.getElementById("f_pests").value = s.pests||"";
+        document.getElementById("f_pests").value = s.pests ? fmtInt(s.pests) : "";
         document.getElementById("f_dust").value = s.sowingDust ? fmtInt(s.sowingDust) : "";
+        document.getElementById("f_kernels").value = s.kernels ? fmtInt(s.kernels) : "";
         document.getElementById("f_notes").value = s.notes||"";
         recalcPreview();
       },0);
@@ -1114,7 +1230,11 @@ function renderSummary(){
     <div class="stat-box"><div class="k">Total pests killed</div><div class="v">${fmtInt(totalPests)}</div></div>
   </div>`;
 
-  html += `<div class="stat-box" style="margin-bottom:24px;"><div class="k">Total sowing dust collected</div><div class="v">${fmtInt(totalDust)}</div></div>`;
+  html += `<div class="stat-box" style="margin-bottom:24px;"><div class="k">Total sowdust collected</div><div class="v">${fmtInt(totalDust)}</div></div>`;
+  const totalKernels = sessions.reduce((a,s)=>a+(Number(s.kernels)||0),0);
+  if(totalKernels>0){
+    html += `<div class="stat-box" style="margin-bottom:24px;"><div class="k">Total Kernels earned</div><div class="v">${fmtInt(totalKernels)}</div></div>`;
+  }
 
   const maxCph = Math.max(...summaries.map(s=>s.avgCph), 1);
   html += `<h2 style="font-size:15px;margin-bottom:14px;">Coins/hour by crop</h2>`;
