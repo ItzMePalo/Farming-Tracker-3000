@@ -34,7 +34,7 @@
     min-height:100vh;
     padding-bottom:60px;
   }
-  .wrap{max-width:1080px;margin:0 auto;padding:0 20px;}
+  .wrap{max-width:1500px;margin:0 auto;padding:0 28px;}
 
   header.site{padding:36px 0 22px;border-bottom:1px solid var(--line);margin-bottom:26px;}
   header.site .eyebrow{
@@ -43,7 +43,7 @@
   }
   header.site h1{font-family: Georgia, "Times New Roman", serif;font-size:38px;margin:0 0 6px;color:var(--ink);}
   header.site h1 span{color:var(--amber);}
-  header.site p{margin:0;color:var(--ink-soft);font-size:14.5px;max-width:600px;line-height:1.5;}
+  header.site p{margin:0;color:var(--ink-soft);font-size:14.5px;max-width:820px;line-height:1.5;}
 
   nav.tabs{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;}
   nav.tabs button{
@@ -82,6 +82,12 @@
 
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;}
   @media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media(min-width:1200px){
+    .grid{grid-template-columns:repeat(8,1fr);}
+    .packets{grid-template-columns:repeat(auto-fill, minmax(132px,1fr));}
+    .summary-grid{grid-template-columns:repeat(4,1fr);}
+    .card{padding:34px 40px;}
+  }
   label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);margin-bottom:5px;font-weight:600;}
   input[type=text], input[type=number], input[type=date], select{
     width:100%;padding:9px 10px;border:1px solid var(--line);border-bottom:2px solid var(--moss-dark);
@@ -94,7 +100,9 @@
   input:disabled{opacity:0.4;cursor:not-allowed;}
 
   .drops-section{border-top:1px dashed var(--line);padding-top:16px;margin-top:6px;}
-  .drop-row{display:grid;grid-template-columns: 2fr 1fr auto;gap:10px;margin-bottom:8px;align-items:center;}
+  .drop-row{display:grid;grid-template-columns: 2fr 1fr auto;gap:10px;margin-bottom:8px;align-items:start;}
+  .drop-row input, .drop-row select{margin:0;}
+  .drop-row > div:first-child, .drop-row > input, .drop-row > .rm, .drop-row > div:last-child{padding-top:0;}
   .drop-hint-row{margin:-4px 0 8px;padding:6px 10px;background:rgba(201,154,78,0.08);border:1px dashed var(--amber-dim);border-radius:4px;font-size:11px;color:var(--amber);}
   .drop-row button.rm{background:none;border:none;color:var(--rust);cursor:pointer;font-size:16px;padding:4px 8px;}
   .drop-row .switch-mode{background:none;border:1px solid var(--line);color:var(--ink-soft);border-radius:4px;padding:8px 9px;cursor:pointer;font-size:11px;}
@@ -138,8 +146,11 @@
 
   .price-cat{font-family:ui-monospace,monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--moss-light);margin:20px 0 8px;padding-top:14px;border-top:1px dashed var(--line);}
   .price-cat:first-of-type{margin-top:0;padding-top:0;border-top:none;}
-  .price-row{display:grid;grid-template-columns:2fr 1fr 1fr 70px;gap:10px;align-items:center;margin-bottom:8px;}
+  .price-row{display:grid;grid-template-columns:2fr 1fr 1fr 70px;gap:10px;align-items:start;margin-bottom:8px;}
+  .price-row > div:last-child{padding-top:9px;}
   .price-row .id{font-size:10px;color:var(--muted);font-family:ui-monospace,monospace;}
+  .id-edit{width:auto;max-width:220px;padding:2px 5px;font-size:10px;color:var(--amber);background:transparent;border:1px solid transparent;border-bottom:1px dashed var(--line);border-radius:2px;margin-top:2px;}
+  .id-edit:hover, .id-edit:focus{border-color:var(--amber-dim);background:var(--surface-3);}
   .badge{font-size:9.5px;text-transform:uppercase;letter-spacing:0.04em;padding:2px 6px;border-radius:10px;text-align:center;font-family:ui-monospace,monospace;}
   .badge.bazaar{background:rgba(95,138,76,0.18);color:var(--moss-light);border:1px solid var(--moss-dark);}
   .badge.npc{background:rgba(201,154,78,0.15);color:var(--amber);border:1px solid var(--amber-dim);}
@@ -210,7 +221,7 @@ const FARMING_ITEMS = [
   {name:"Enchanted Carrot", id:"ENCHANTED_CARROT", emoji:"🥕", category:"Crop Drops"},
   {name:"Enchanted Potato", id:"ENCHANTED_POTATO", emoji:"🥔", category:"Crop Drops"},
   {name:"Enchanted Pumpkin", id:"ENCHANTED_PUMPKIN", emoji:"🎃", category:"Crop Drops"},
-  {name:"Enchanted Melon", id:"ENCHANTED_MELON", emoji:"🍉", category:"Crop Drops"},
+  {name:"Enchanted Melon Slice", id:"ENCHANTED_MELON", emoji:"🍉", category:"Crop Drops"},
   {name:"Enchanted Sugar Cane", id:"ENCHANTED_SUGAR_CANE", emoji:"🎋", category:"Crop Drops"},
   {name:"Enchanted Cactus Green", id:"ENCHANTED_CACTUS_GREEN", emoji:"🌵", category:"Crop Drops"},
   {name:"Enchanted Cocoa Beans", id:"ENCHANTED_COCOA", emoji:"🍫", category:"Crop Drops"},
@@ -227,7 +238,7 @@ const FARMING_ITEMS = [
   {name:"Enchanted Golden Carrot", id:"ENCHANTED_GOLDEN_CARROT", emoji:"🥕", category:"Crop Drops"},
   {name:"Enchanted Baked Potato", id:"ENCHANTED_BAKED_POTATO", emoji:"🥔", category:"Crop Drops"},
   {name:"Polished Pumpkin", id:"POLISHED_PUMPKIN", emoji:"🎃", category:"Crop Drops"},
-  {name:"Enchanted Melon Block", id:"ENCHANTED_MELON_BLOCK", emoji:"🍉", category:"Crop Drops"},
+  {name:"Enchanted Melon", id:"ENCHANTED_MELON_BLOCK", emoji:"🍉", category:"Crop Drops"},
   {name:"Enchanted Sugar", id:"ENCHANTED_SUGAR", emoji:"🎋", category:"Crop Drops"},
   {name:"Enchanted Cactus", id:"ENCHANTED_CACTUS", emoji:"🌵", category:"Crop Drops"},
   {name:"Enchanted Cookie", id:"ENCHANTED_COOKIE", emoji:"🍪", category:"Crop Drops"},
@@ -257,9 +268,22 @@ const FARMING_ITEMS = [
   {name:"Slug Pet (Epic)", id:"SLUG_PET_EPIC", emoji:"🐌", category:"Rare Pest Drops", npcOnly:true, defaultNpc:500000},
   {name:"Slug Pet (Legendary)", id:"SLUG_PET_LEGENDARY", emoji:"🐌", category:"Rare Pest Drops", npcOnly:true, defaultNpc:5000000},
   {name:"Overclocker 3000", id:"OVERCLOCKER_3000", emoji:"⚙️", category:"Rare Pest Drops", npcOnly:true, defaultNpc:250000},
-  {name:"Bookworm's Favorite Book", id:"BOOKWORMS_FAVORITE_BOOK", emoji:"📖", category:"Rare Pest Drops"}
+  {name:"Bookworm's Favorite Book", id:"BOOKWORMS_FAVORITE_BOOK", emoji:"📖", category:"Rare Pest Drops"},
+
+  // Garden Chips (bought with Sowing Dust, upgraded with more of it — priced here as whatever
+  // you'd value one at, since chips aren't directly bazaar-sellable; leave 0 if you just want to track counts)
+  {name:"Rarefinder Chip", id:"RAREFINDER_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Quickdraw Chip", id:"QUICKDRAW_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Cropshot Chip", id:"CROPSHOT_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Evergreen Chip", id:"EVERGREEN_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Overdrive Chip", id:"OVERDRIVE_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Hypercharge Chip", id:"HYPERCHARGE_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Mechamind Chip", id:"MECHAMIND_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Sowledge Chip", id:"SOWLEDGE_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Synthesis Chip", id:"SYNTHESIS_CHIP", emoji:"💾", category:"Garden Chips"},
+  {name:"Vermin Vaporizer Chip", id:"VERMIN_VAPORIZER_CHIP", emoji:"💾", category:"Garden Chips"}
 ];
-const CATEGORY_ORDER = ["Crop Drops","Specialty Crops","Pest Bait","Rare Pest Drops"];
+const CATEGORY_ORDER = ["Crop Drops","Specialty Crops","Pest Bait","Rare Pest Drops","Garden Chips"];
 
 // Craft-up chains: base drop -> what it crafts into, and the default ratio (base units per craft).
 // 160:1 is the standard Hypixel enchanted-tier ratio (confirmed for Wheat->Hay Bale and
@@ -272,7 +296,7 @@ const CRAFT_CHAINS = {
   "Enchanted Brown Mushroom": {target:"Enchanted Brown Mushroom Block", targetId:"ENCHANTED_HUGE_MUSHROOM_2", ratio:160},
   "Enchanted Potato": {target:"Enchanted Baked Potato", targetId:"ENCHANTED_BAKED_POTATO", ratio:160},
   "Enchanted Carrot": {target:"Enchanted Golden Carrot", targetId:"ENCHANTED_GOLDEN_CARROT", ratio:160},
-  "Enchanted Melon": {target:"Enchanted Melon Block", targetId:"ENCHANTED_MELON_BLOCK", ratio:160},
+  "Enchanted Melon Slice": {target:"Enchanted Melon", targetId:"ENCHANTED_MELON_BLOCK", ratio:160},
   "Enchanted Cactus Green": {target:"Enchanted Cactus", targetId:"ENCHANTED_CACTUS", ratio:160},
   "Enchanted Sunflower": {target:"Compacted Sunflower", targetId:"COMPACTED_SUNFLOWER", ratio:160},
   "Enchanted Moonflower": {target:"Compacted Moonflower", targetId:"COMPACTED_MOONFLOWER", ratio:160},
@@ -300,10 +324,18 @@ function parseShorthand(v){
   return num;
 }
 function fmtInt(n){ return Math.round(Number(n)||0).toLocaleString("en-US"); }
-function attachShorthand(el){
+// Prices (bazaar/npc/coins) can have real decimals — show one decimal place only when
+// the number actually has one, otherwise a clean whole number, always with commas.
+function fmtPrice(n){
+  n = Math.round((Number(n)||0)*10)/10;
+  const hasDecimal = Math.abs(n % 1) > 0.001;
+  return n.toLocaleString("en-US", {minimumFractionDigits: hasDecimal?1:0, maximumFractionDigits:1});
+}
+function attachShorthand(el, formatter){
+  const fmt = formatter || fmtInt;
   el.addEventListener("blur", ()=>{
     if(el.value.trim()==="") return;
-    el.value = fmtInt(parseShorthand(el.value));
+    el.value = fmt(parseShorthand(el.value));
   });
 }
 
@@ -330,6 +362,7 @@ let prices = Store.get("ft3000_prices", {});              // { itemName: {bazaar
 let settings = Store.get("ft3000_settings", {jsonbinId:"", jsonbinKey:""});
 let cropPresets = Store.get("ft3000_cropPresets", {});     // { cropName: [itemName, ...] }
 let craftRatios = Store.get("ft3000_craftRatios", {});     // { baseItemName: ratioOverride }
+let itemIdOverrides = Store.get("ft3000_itemIdOverrides", {}); // { itemName: bazaarProductId } — edit on Prices tab
 
 let activeTab = "log";
 let activeCrop = null;
@@ -346,7 +379,8 @@ function savePrices(){ Store.set("ft3000_prices", prices); }
 function saveSettings(){ Store.set("ft3000_settings", settings); }
 function saveCropPresets(){ Store.set("ft3000_cropPresets", cropPresets); }
 function saveCraftRatios(){ Store.set("ft3000_craftRatios", craftRatios); }
-function saveAll(){ saveSessions(); saveCrops(); savePrices(); saveSettings(); saveCropPresets(); saveCraftRatios(); }
+function saveItemIdOverrides(){ Store.set("ft3000_itemIdOverrides", itemIdOverrides); }
+function saveAll(){ saveSessions(); saveCrops(); savePrices(); saveSettings(); saveCropPresets(); saveCraftRatios(); saveItemIdOverrides(); }
 
 function allCrops(){ return DEFAULT_CROPS.concat(customCrops); }
 
@@ -386,6 +420,7 @@ function chainTargetMeta(name){
   return Object.values(CRAFT_CHAINS).find(c=>c.target===name) || null;
 }
 function productIdFor(name){
+  if(itemIdOverrides[name]) return itemIdOverrides[name];
   const known = itemMeta(name);
   if(known) return known.id;
   const asTarget = chainTargetMeta(name);
@@ -486,9 +521,10 @@ async function fetchLivePrices(){
     });
     savePrices();
     showToast(`Updated ${matched} of ${items.length} items.` + (unmatched.length ? ` No match for: ${unmatched.slice(0,8).join(", ")}${unmatched.length>8?" …":""} — set those manually.` : ""), 6500);
-    render();
+    return true;
   }catch(err){
     showToast("Couldn't reach the Hypixel API from here — enter prices manually. This should work fine once hosted on GitHub Pages.", 5500);
+    return false;
   }
 }
 
@@ -604,9 +640,23 @@ function renderLog(){
     recalcPreview();
   });
   document.getElementById("fetchPricesLog").addEventListener("click", async ()=>{ await fetchLivePrices(); renderDropRows(); recalcPreview(); });
-  document.getElementById("sessionForm").addEventListener("submit", onSubmitSession);
-  document.getElementById("sessionForm").addEventListener("input", (e)=>{
+  const sessionFormEl = document.getElementById("sessionForm");
+  sessionFormEl.addEventListener("submit", onSubmitSession);
+  sessionFormEl.addEventListener("input", (e)=>{
     if(["f_duration","f_dust"].includes(e.target.id)) recalcPreview();
+  });
+  // Enter moves to the next field instead of submitting the whole session.
+  sessionFormEl.addEventListener("keydown", (e)=>{
+    if(e.key!=="Enter" || e.target.tagName==="BUTTON" || e.target.type==="submit") return;
+    e.preventDefault();
+    const focusable = Array.from(sessionFormEl.querySelectorAll('input:not([disabled]), select:not([disabled])'))
+      .filter(el=>el.offsetParent!==null);
+    const idx = focusable.indexOf(e.target);
+    if(idx>-1 && idx<focusable.length-1){
+      const next = focusable[idx+1];
+      next.focus();
+      if(next.select) next.select();
+    }
   });
   const cancelBtn = document.getElementById("cancelEdit");
   if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editingSessionId=null; currentDrops=dropRowsFromPreset(activeCrop); render(); });
@@ -730,12 +780,12 @@ function recalcPreview(){
       <td>${escapeHtml(d.item)}</td>
       <td class="num">${fmtInt(qty)}</td>
       <td>${badge}</td>
-      <td class="num">${fmtInt(pi.best)}</td>
-      <td class="num">${fmtInt(sub)}</td>
+      <td class="num">${fmtPrice(pi.best)}</td>
+      <td class="num">${fmtPrice(sub)}</td>
     </tr>`;
     const sugg = craftSuggestion(d.item, qty);
     if(sugg){
-      rowsHtml += `<tr><td colspan="5" class="drop-hint-row" style="border-bottom:1px dashed var(--line);">🔨 Better to craft into <b>${fmtInt(sugg.crafted)}× ${escapeHtml(sugg.target)}</b> instead of selling raw — worth <b>+${fmtInt(sugg.diff)}</b> more coins</td></tr>`;
+      rowsHtml += `<tr><td colspan="5" class="drop-hint-row" style="border-bottom:1px dashed var(--line);">🔨 Better to craft into <b>${fmtInt(sugg.crafted)}× ${escapeHtml(sugg.target)}</b> instead of selling raw — worth <b>+${fmtPrice(sugg.diff)}</b> more coins</td></tr>`;
     }
   });
   if(dust>0){
@@ -743,7 +793,7 @@ function recalcPreview(){
     const sub = pi.best*dust;
     total += sub;
     const badge = pi.method==="bazaar" ? '<span class="badge bazaar">Bazaar</span>' : pi.method==="npc" ? '<span class="badge npc">NPC</span>' : '<span class="badge none">no price</span>';
-    rowsHtml += `<tr><td>Sowing Dust</td><td class="num">${fmtInt(dust)}</td><td>${badge}</td><td class="num">${fmtInt(pi.best)}</td><td class="num">${fmtInt(sub)}</td></tr>`;
+    rowsHtml += `<tr><td>Sowing Dust</td><td class="num">${fmtInt(dust)}</td><td>${badge}</td><td class="num">${fmtPrice(pi.best)}</td><td class="num">${fmtPrice(sub)}</td></tr>`;
   }
 
   const cph = duration>0 ? total/(duration/60) : 0;
@@ -752,8 +802,8 @@ function recalcPreview(){
     <h2 style="font-size:15px;margin-bottom:10px;">Session value (live preview)</h2>
     ${rowsHtml ? `<table><thead><tr><th>Drop</th><th class="num">Qty</th><th>Priced via</th><th class="num">Coins/unit</th><th class="num">Subtotal</th></tr></thead><tbody>${rowsHtml}</tbody></table>` : '<p style="color:var(--ink-soft);font-size:12.5px;">Add drops and quantities above to see their value.</p>'}
     <div class="preview-total">
-      <div class="stat-box"><div class="k">Total coins so far</div><div class="v">${fmtInt(total)}</div></div>
-      <div class="stat-box"><div class="k">${duration>0 ? `At this rate (${duration}m) → per hour` : "Enter duration to see coins/h"}</div><div class="v">${duration>0 ? fmtInt(cph) : "—"}</div></div>
+      <div class="stat-box"><div class="k">Total coins so far</div><div class="v">${fmtPrice(total)}</div></div>
+      <div class="stat-box"><div class="k">${duration>0 ? `At this rate (${duration}m) → per hour` : "Enter duration to see coins/h"}</div><div class="v">${duration>0 ? fmtPrice(cph) : "—"}</div></div>
     </div>`;
 }
 
@@ -789,8 +839,22 @@ function onSubmitSession(e){
   }
   updatePresetFromSubmission(activeCrop, drops);
   saveSessions();
+  autoPushIfConfigured();
   currentDrops = dropRowsFromPreset(activeCrop);
   render();
+}
+
+// If a JSONBin Bin ID + Key are set, silently sync after every save/delete so you never
+// have to remember to hit Push yourself. Fails quietly (a manual Push is still there as backup).
+async function autoPushIfConfigured(){
+  if(!settings.jsonbinId || !settings.jsonbinKey) return;
+  try{
+    await fetch(`https://api.jsonbin.io/v3/b/${settings.jsonbinId}`, {
+      method:"PUT",
+      headers:{"Content-Type":"application/json","X-Master-Key":settings.jsonbinKey},
+      body: JSON.stringify({sessions, prices, customCrops, cropPresets, craftRatios, itemIdOverrides})
+    });
+  }catch(e){ /* silent — manual Push/Pull on the Data tab still works as a fallback */ }
 }
 
 function renderHistory(){
@@ -813,6 +877,24 @@ function renderHistory(){
   sel.addEventListener("change", ()=>renderHistoryTable(sel.value));
 }
 
+function sessionDetailHtml(s){
+  const rows = (s.drops||[]).map(d=>{
+    const pi = priceInfo(d.item);
+    return `<tr><td>${escapeHtml(d.item)}</td><td class="num">${fmtInt(d.qty)}</td><td class="num">${fmtPrice(pi.best)}</td><td class="num">${fmtPrice(pi.best*d.qty)}</td></tr>`;
+  }).join("");
+  return `<tr class="detail-row"><td colspan="9" style="background:var(--surface-2);">
+    <div class="summary-grid" style="margin:6px 0 16px;">
+      <div class="stat-box"><div class="k">Farming Fortune</div><div class="v">${s.fortune?fmtInt(s.fortune):"—"}</div></div>
+      <div class="stat-box"><div class="k">Overbloom</div><div class="v">${s.overbloom?fmtInt(s.overbloom):"—"}</div></div>
+      <div class="stat-box"><div class="k">Bonus Pest Chance</div><div class="v">${s.bpc?fmtInt(s.bpc)+"%":"—"}</div></div>
+      <div class="stat-box"><div class="k">Pests Killed</div><div class="v">${s.pests?fmtInt(s.pests):"—"}</div></div>
+    </div>
+    ${s.notes ? `<p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;"><b style="color:var(--ink);">Notes:</b> ${escapeHtml(s.notes)}</p>` : ""}
+    ${rows ? `<table><thead><tr><th>Drop</th><th class="num">Qty</th><th class="num">Coins/unit</th><th class="num">Subtotal</th></tr></thead><tbody>${rows}</tbody></table>` : '<p style="color:var(--ink-soft);font-size:12.5px;">No drops logged for this session.</p>'}
+  </td></tr>`;
+}
+
+let expandedSessionId = null;
 function renderHistoryTable(filter){
   const holder = document.getElementById("historyTable");
   let list = filter==="__all__" ? sessions.slice() : sessions.filter(s=>s.crop===filter);
@@ -821,30 +903,39 @@ function renderHistoryTable(filter){
     holder.innerHTML = `<div class="empty">No sessions logged yet${filter!=="__all__"?" for "+escapeHtml(filter):""}. Head to Log Session to add your first one.</div>`;
     return;
   }
-  let html = `<table><thead><tr>
+  let html = `<p class="id-hint" style="margin-bottom:10px;">Click a row to view its full details.</p><table><thead><tr>
     <th>Date</th><th>Crop</th><th>Min</th><th>Pests</th><th>Dust</th><th>Drops</th><th class="num">Coins</th><th class="num">Coins/h</th><th></th>
   </tr></thead><tbody>`;
   list.forEach(s=>{
     const coins = sessionCoins(s);
     const cph = coinsPerHour(s);
     const dropsHtml = (s.drops&&s.drops.length) ? s.drops.map(d=>`<span class="drop-chip">${escapeHtml(d.item)} ×${fmtInt(d.qty)}</span>`).join("") : '<span style="color:var(--muted);">—</span>';
-    html += `<tr>
+    html += `<tr class="session-row" data-view="${s.id}" style="cursor:pointer;">
       <td class="mono">${s.date||""}</td>
       <td>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</td>
       <td class="num">${s.duration}</td>
       <td class="num">${s.pests||0}</td>
       <td class="num">${fmtInt(s.sowingDust||0)}</td>
       <td>${dropsHtml}</td>
-      <td class="num">${fmtInt(coins)}</td>
-      <td class="num">${fmtInt(cph)}</td>
+      <td class="num">${fmtPrice(coins)}</td>
+      <td class="num">${fmtPrice(cph)}</td>
       <td>
         <button class="btn ghost small" data-edit="${s.id}">Edit</button>
         <button class="btn danger small" data-del="${s.id}">Del</button>
       </td>
     </tr>`;
+    if(expandedSessionId===s.id) html += sessionDetailHtml(s);
   });
   html += "</tbody></table>";
   holder.innerHTML = html;
+  holder.querySelectorAll(".session-row").forEach(tr=>{
+    tr.addEventListener("click", (e)=>{
+      if(e.target.closest("button")) return;
+      const id = tr.dataset.view;
+      expandedSessionId = (expandedSessionId===id) ? null : id;
+      renderHistoryTable(filter);
+    });
+  });
   holder.querySelectorAll("[data-edit]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const s = sessions.find(x=>x.id===btn.dataset.edit);
@@ -872,6 +963,7 @@ function renderHistoryTable(filter){
       if(!confirm("Delete this session? This can't be undone.")) return;
       sessions = sessions.filter(x=>x.id!==btn.dataset.del);
       saveSessions();
+      autoPushIfConfigured();
       renderHistoryTable(filter);
       showToast("Session deleted.");
     });
@@ -882,7 +974,7 @@ function renderPrices(){
   const items = allKnownItems();
   let html = `<div class="card">
     <h2>Bazaar &amp; NPC prices</h2>
-    <p class="sub">Both sell routes, side by side, so you can see which pays more. The higher one is what's used for your coin totals. Prices accept shorthand (500k, 5m) — they lock in as exact numbers when you click away.</p>
+    <p class="sub">Both sell routes, side by side, so you can see which pays more. The higher one is what's used for your coin totals. Prices accept decimals and shorthand (500k, 5m) — they lock in as exact numbers when you click away. The small amber code under each item name is the Bazaar product ID used for live fetch — click it and type the correct one if a fetch isn't matching an item; it's saved and used from then on.</p>
     <div class="fetch-bar">
       <button class="btn amber" id="fetchPrices">⟳ Fetch live prices</button>
       <button class="btn ghost" id="addPriceItem">+ Add item manually</button>
@@ -902,7 +994,7 @@ function renderPrices(){
   content.innerHTML = html;
   renderPriceRows(items);
   renderConvRows();
-  document.getElementById("fetchPrices").addEventListener("click", fetchLivePrices);
+  document.getElementById("fetchPrices").addEventListener("click", async ()=>{ await fetchLivePrices(); render(); });
   document.getElementById("addPriceItem").addEventListener("click", ()=>{
     const name = prompt("Item name (as it'll appear when you log drops):");
     if(name && name.trim()){
@@ -941,24 +1033,33 @@ function renderPriceRows(items){
       const badge = pi.method==="bazaar" ? '<span class="badge bazaar">Bazaar</span>' : pi.method==="npc" ? '<span class="badge npc">NPC</span>' : '<span class="badge none">—</span>';
       const bazaarField = (meta && meta.npcOnly)
         ? `<input type="text" value="NPC only" disabled>`
-        : `<input type="text" inputmode="decimal" class="price-input" data-item="${escapeAttr(name)}" data-field="bazaar" value="${p.bazaar?fmtInt(p.bazaar):0}">`;
+        : `<input type="text" inputmode="decimal" class="price-input" data-item="${escapeAttr(name)}" data-field="bazaar" value="${p.bazaar?fmtPrice(p.bazaar):0}">`;
       html += `<div class="price-row">
-        <div>${escapeHtml(name)}<div class="id">${escapeHtml(productIdFor(name))}</div></div>
+        <div>${escapeHtml(name)}<input type="text" class="id-edit mono" data-idname="${escapeAttr(name)}" value="${escapeAttr(productIdFor(name))}" title="Bazaar product ID used for live fetch — edit if it's wrong"></div>
         ${bazaarField}
-        <input type="text" inputmode="decimal" class="price-input" data-item="${escapeAttr(name)}" data-field="npc" value="${p.npc?fmtInt(p.npc):0}">
+        <input type="text" inputmode="decimal" class="price-input" data-item="${escapeAttr(name)}" data-field="npc" value="${p.npc?fmtPrice(p.npc):0}">
         <div>${badge}</div>
       </div>`;
     });
   });
   holder.innerHTML = html;
   holder.querySelectorAll(".price-input").forEach(inp=>{
-    attachShorthand(inp);
+    attachShorthand(inp, fmtPrice);
     inp.addEventListener("change", ()=>{
       const item = inp.dataset.item, field = inp.dataset.field;
       prices[item] = prices[item] || {bazaar:0, npc:0};
       prices[item][field] = parseShorthand(inp.value);
       savePrices();
       render();
+    });
+  });
+  holder.querySelectorAll(".id-edit").forEach(inp=>{
+    inp.addEventListener("change", ()=>{
+      const name = inp.dataset.idname;
+      const clean = inp.value.trim().toUpperCase().replace(/\s+/g,"_");
+      if(clean){ itemIdOverrides[name] = clean; } else { delete itemIdOverrides[name]; }
+      saveItemIdOverrides();
+      inp.value = productIdFor(name);
     });
   });
 }
@@ -1004,12 +1105,12 @@ function renderSummary(){
   const overallCph = totalMin>0 ? totalCoins/(totalMin/60) : 0;
   const best = summaries.slice().sort((a,b)=>b.avgCph-a.avgCph)[0];
 
-  html += `<div class="best-banner">🏆 Best crop right now: <b>${escapeHtml(best.crop)}</b> — ${fmtInt(best.avgCph)} coins/h</div>`;
+  html += `<div class="best-banner">🏆 Best crop right now: <b>${escapeHtml(best.crop)}</b> — ${fmtPrice(best.avgCph)} coins/h</div>`;
 
   html += `<div class="summary-grid">
     <div class="stat-box"><div class="k">Total time farmed</div><div class="v">${formatHours(totalMin)}</div></div>
-    <div class="stat-box"><div class="k">Total coins earned</div><div class="v">${fmtInt(totalCoins)}</div></div>
-    <div class="stat-box"><div class="k">Overall coins / h</div><div class="v">${fmtInt(overallCph)}</div></div>
+    <div class="stat-box"><div class="k">Total coins earned</div><div class="v">${fmtPrice(totalCoins)}</div></div>
+    <div class="stat-box"><div class="k">Overall coins / h</div><div class="v">${fmtPrice(overallCph)}</div></div>
     <div class="stat-box"><div class="k">Total pests killed</div><div class="v">${fmtInt(totalPests)}</div></div>
   </div>`;
 
@@ -1022,7 +1123,7 @@ function renderSummary(){
     html += `<div class="bar-row">
       <div>${CROP_EMOJI[s.crop]||DEFAULT_EMOJI} ${escapeHtml(s.crop)}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <div class="num">${fmtInt(s.avgCph)}</div>
+      <div class="num">${fmtPrice(s.avgCph)}</div>
     </div>`;
   });
 
@@ -1037,8 +1138,8 @@ function renderSummary(){
       <td class="num">${formatHours(s.totalMin)}</td>
       <td class="num">${fmtInt(s.totalPests)}</td>
       <td class="num">${fmtInt(s.totalDust)}</td>
-      <td class="num">${fmtInt(s.totalCoins)}</td>
-      <td class="num">${fmtInt(s.avgCph)}</td>
+      <td class="num">${fmtPrice(s.totalCoins)}</td>
+      <td class="num">${fmtPrice(s.avgCph)}</td>
     </tr>`;
   });
   html += `</tbody></table></div>`;
@@ -1092,7 +1193,7 @@ function renderData(){
   document.getElementById("jsonbinPull").addEventListener("click", jsonbinPull);
   document.getElementById("resetBtn").addEventListener("click", ()=>{
     if(!confirm("This deletes every logged session, price, preset and custom crop in this browser. Continue?")) return;
-    sessions = []; customCrops = []; prices = {}; cropPresets = {}; craftRatios = {};
+    sessions = []; customCrops = []; prices = {}; cropPresets = {}; craftRatios = {}; itemIdOverrides = {};
     saveAll();
     seedDefaults();
     showToast("All data cleared.");
@@ -1101,7 +1202,7 @@ function renderData(){
 }
 
 function exportJSON(){
-  const payload = {sessions, prices, customCrops, cropPresets, craftRatios, exportedAt: new Date().toISOString()};
+  const payload = {sessions, prices, customCrops, cropPresets, craftRatios, itemIdOverrides, exportedAt: new Date().toISOString()};
   const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1117,7 +1218,7 @@ function importJSONFile(file){
       const data = JSON.parse(reader.result);
       if(!confirm("Import will replace your current local data. Continue?")) return;
       sessions = data.sessions||[]; prices = data.prices||{}; customCrops = data.customCrops||[];
-      cropPresets = data.cropPresets||{}; craftRatios = data.craftRatios||{};
+      cropPresets = data.cropPresets||{}; craftRatios = data.craftRatios||{}; itemIdOverrides = data.itemIdOverrides||{};
       saveAll();
       showToast("Imported.");
       render();
@@ -1132,7 +1233,7 @@ async function jsonbinCreate(){
     const res = await fetch("https://api.jsonbin.io/v3/b", {
       method:"POST",
       headers:{"Content-Type":"application/json","X-Master-Key":settings.jsonbinKey,"X-Bin-Name":"Farming Tracker 3000"},
-      body: JSON.stringify({sessions, prices, customCrops, cropPresets, craftRatios})
+      body: JSON.stringify({sessions, prices, customCrops, cropPresets, craftRatios, itemIdOverrides})
     });
     if(!res.ok) throw new Error("bad status");
     const data = await res.json();
@@ -1151,7 +1252,7 @@ async function jsonbinPush(){
     const res = await fetch(`https://api.jsonbin.io/v3/b/${settings.jsonbinId}`, {
       method:"PUT",
       headers:{"Content-Type":"application/json","X-Master-Key":settings.jsonbinKey},
-      body: JSON.stringify({sessions, prices, customCrops, cropPresets, craftRatios})
+      body: JSON.stringify({sessions, prices, customCrops, cropPresets, craftRatios, itemIdOverrides})
     });
     if(!res.ok) throw new Error("bad status");
     showToast("Synced to JSONBin.");
@@ -1167,7 +1268,7 @@ async function jsonbinPull(){
     const rec = data.record || {};
     if(!confirm("Pull will replace your local data with the JSONBin copy. Continue?")) return;
     sessions = rec.sessions || []; prices = rec.prices || {}; customCrops = rec.customCrops || [];
-    cropPresets = rec.cropPresets || {}; craftRatios = rec.craftRatios || {};
+    cropPresets = rec.cropPresets || {}; craftRatios = rec.craftRatios || {}; itemIdOverrides = rec.itemIdOverrides || {};
     saveAll();
     showToast("Pulled from JSONBin.");
     render();
